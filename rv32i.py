@@ -94,14 +94,20 @@ class RV32I:
             result = self.regs[instr.rs1] & self.regs[instr.rs2]
             self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x1 and instr.funct7 == 0x00:  # SLL
-            result = self.regs[instr.rs1] >> self.regs[instr.rs2]
+            shift_num = self.regs[instr.rs2] & 0x1f  # Only consider lower 5 bits
+            result = (to_uint32(self.regs[instr.rs1]) << shift_num) % (1 << 32)
             self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x5 and instr.funct7 == 0x00:  # SRL
-            raise NotImplementedError
+            shift_num = self.regs[instr.rs2] & 0x1f  # Only consider lower 5 bits
+            result = to_uint32(self.regs[instr.rs1]) >> shift_num
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x5 and instr.funct7 == 0x20:  # SRA
-            raise NotImplementedError
+            shift_num = self.regs[instr.rs2] & 0x1f  # Only consider lower 5 bits
+            result = self.regs[instr.rs1] >> shift_num
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x2 and instr.funct7 == 0x00:  # SLT
             result = 1 if self.regs[instr.rs1] < self.regs[instr.rs2] else 0
             self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x3 and instr.funct7 == 0x00:  # SLTU
-            raise NotImplementedError
+            result = 1 if to_uint32(self.regs[instr.rs1]) < to_uint32(self.regs[instr.rs2]) else 0
+            self.set_reg(instr.rd, result)

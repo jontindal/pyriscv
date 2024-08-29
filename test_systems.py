@@ -81,7 +81,11 @@ def test_asm_single(asm_qwargs: dict[str, t.Any], expected: int):
     + arch_tests.XOR_TESTS
     + arch_tests.OR_TESTS
     + arch_tests.AND_TESTS
+    + arch_tests.SLL_TESTS
+    + arch_tests.SRL_TESTS
+    + arch_tests.SRA_TESTS
     + arch_tests.SLT_TESTS
+    + arch_tests.SLTU_TESTS
 )
 def test_rr_op(
     instr: str, rd: R, rs1: R, rs2: R, correctval: int, val1: int, val2: int
