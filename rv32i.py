@@ -81,25 +81,25 @@ class RV32I:
             self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x0 and instr.funct7 == 0x20:  # SUB
             result = self.regs[instr.rs1] - self.regs[instr.rs2]
-            self._set_reg(instr.rd, result)
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x4 and instr.funct7 == 0x00:  # XOR
             result = self.regs[instr.rs1] ^ self.regs[instr.rs2]
-            self._set_reg(instr.rd, result)
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x6 and instr.funct7 == 0x00:  # OR
             result = self.regs[instr.rs1] | self.regs[instr.rs2]
-            self._set_reg(instr.rd, result)
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x7 and instr.funct7 == 0x00:  # AND
             result = self.regs[instr.rs1] & self.regs[instr.rs2]
-            self._set_reg(instr.rd, result)
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x1 and instr.funct7 == 0x00:  # SLL
             result = self.regs[instr.rs1] >> self.regs[instr.rs2]
-            self._set_reg(instr.rd, result)
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x5 and instr.funct7 == 0x00:  # SRL
             raise NotImplementedError
         elif instr.funct3 == 0x5 and instr.funct7 == 0x20:  # SRA
             raise NotImplementedError
         elif instr.funct3 == 0x2 and instr.funct7 == 0x00:  # SLT
             result = 1 if self.regs[instr.rs1] < self.regs[instr.rs2] else 0
-            self._set_reg(instr.rd, result)
+            self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x3 and instr.funct7 == 0x00:  # SLTU
             raise NotImplementedError
