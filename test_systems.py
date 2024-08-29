@@ -97,3 +97,26 @@ def test_rr_op(
     rv.execute(rv.decode(instr_bin))
     expected = to_int32(correctval)
     assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
+
+
+@pytest.mark.parametrize(
+    "instr,rd,rs1,correctval,val1,imm",
+    arch_tests.ADDI_TESTS
+    + arch_tests.XORI_TESTS
+    + arch_tests.ORI_TESTS
+    + arch_tests.ANDI_TESTS
+    + arch_tests.SLLI_TESTS
+    + arch_tests.SRLI_TESTS
+    + arch_tests.SRAI_TESTS
+    + arch_tests.SLTI_TESTS
+    + arch_tests.SLTIU_TESTS
+)
+def test_imm_op(
+    instr: str, rd: R, rs1: R, correctval: int, val1: int, imm: int
+):
+    rv = RV32I(RAM())
+    rv.set_reg(rs1, val1)
+    instr_bin = asm(instr, rd, rs1, imm=imm)
+    rv.execute(rv.decode(instr_bin))
+    expected = to_int32(correctval)
+    assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
