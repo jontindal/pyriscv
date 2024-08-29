@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-import numpy as np
+from utils import int_to_bits, bits_to_int, bitfield_slice
 
 
 class RegNames(IntEnum):
@@ -79,28 +79,17 @@ ASM_INSTR_FORMATS = {
 }
 
 
-def bits_to_int(bits: str) -> int:
-    return int(bits, 2)
-
-
-def bitfield_slice(bits: str, high: int, low: int):
-    """extract bitfields from a bit-array using Verilog bit-indexing order,
-    so [0] is the right-most bit (which is opposite order than bitstring),
-    and [1:0] are the 2 least significant bits, etc."""
-    return bits[len(bits) - 1 - high: len(bits) - low]
-
-
 def asm(instr: str, rd: int | None = None, rs1: int | None = None,
         rs2: int | None = None, imm: int | None = None,):
     typ, opcode_bits = ASM_INSTR_FORMATS[instr]
     funct7, funct3, opcode = opcode_bits.split("_")
 
     if rd is not None:
-        rd = np.binary_repr(rd, 5)
+        rd = int_to_bits(rd, 5)
     if rs1 is not None:
-        rs1 = np.binary_repr(rs1, 5)
+        rs1 = int_to_bits(rs1, 5)
     if rs2 is not None:
-        rs2 = np.binary_repr(rs2, 5)
+        rs2 = int_to_bits(rs2, 5)
 
     match typ:
         case "R":
@@ -108,15 +97,15 @@ def asm(instr: str, rd: int | None = None, rs1: int | None = None,
         case "I":
             if instr in ("slli", "srli", "srai"):
                 funct7 = 0x20 if instr == "srai" else 0x00
-                imm_i = np.binary_repr(funct7, 7) + np.binary_repr(imm, 5)
+                imm_i = int_to_bits(funct7, 7) + int_to_bits(imm, 5)
             else:
-                imm_i = np.binary_repr(imm, 12)
+                imm_i = int_to_bits(imm, 12)
             bits = imm_i + rs1 + funct3 + rd + opcode
         case "U":
-            imm_u = np.binary_repr(imm, 20)
+            imm_u = int_to_bits(imm, 20)
             bits = imm_u + rd + opcode
         case "S":
-            imm_s = np.binary_repr(imm, 12)
+            imm_s = int_to_bits(imm, 12)
             bits = (
                 bitfield_slice(imm_s, 11, 5)
                 + rs2
@@ -126,7 +115,7 @@ def asm(instr: str, rd: int | None = None, rs1: int | None = None,
                 + opcode
             )
         case "J":
-            imm_j = np.binary_repr(imm, 21)
+            imm_j = int_to_bits(imm, 21)
             bits = (
                 bitfield_slice(imm_j, 20, 20)
                 + bitfield_slice(imm_j, 10, 1)
@@ -136,7 +125,7 @@ def asm(instr: str, rd: int | None = None, rs1: int | None = None,
                 + opcode
             )
         case "B":
-            imm_b = np.binary_repr(imm, 13)
+            imm_b = int_to_bits(imm, 13)
             bits = (
                 bitfield_slice(imm_b, 12, 12)
                 + bitfield_slice(imm_b, 10, 5)
