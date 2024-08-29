@@ -1,11 +1,53 @@
 import pytest
 import typing as t
 
+import numpy as np
+
 from assem import RegNames as R, asm
 from ram import RAM
-from rv32i import to_int32, RV32I
+from rv32i import IntTypes, to_int32, to_uint32, RV32I
 
 import arch_tests
+
+
+@pytest.mark.parametrize(
+    "val,expected",
+    [
+        (0x0000_0001, np.int32(0x0000_0001)),
+        (0x7fff_ffff, np.int32(0x7fff_ffff)),
+        (-0x0000_0001, np.int32(-0x0000_0001)),
+        (-0x8000_0000, np.int32(-0x8000_0000)),
+        (0x8000_0000, np.int32(-0x8000_0000)),
+        (0xffff_ffff, np.int32(-0x0000_0001)),
+        (np.uint32(0x0000_0001), np.int32(0x0000_0001)),
+        (np.uint32(0x7fff_ffff), np.int32(0x7fff_ffff)),
+        (np.uint32(0x8000_0000), np.int32(-0x8000_0000)),
+        (np.uint32(0xffff_ffff), np.int32(-0x0000_0001)),
+    ],
+)
+def test_to_int32(val: IntTypes, expected: np.int32):
+    result = to_int32(val)
+    assert result == expected, f"Got 0x{result:x}, expected 0x{expected:x} for input 0x{val:x}"
+
+
+@pytest.mark.parametrize(
+    "val,expected",
+    [
+        (0x0000_0001, np.uint32(0x0000_0001)),
+        (0x7fff_ffff, np.uint32(0x7fff_ffff)),
+        (-0x0000_0001, np.uint32(0xffff_ffff)),
+        (-0x8000_0000, np.uint32(0x8000_0000)),
+        (0x8000_0000, np.uint32(0x8000_0000)),
+        (0xffff_ffff, np.uint32(0xffff_ffff)),
+        (np.int32(0x0000_0001), np.uint32(0x0000_0001)),
+        (np.int32(0x7fff_ffff), np.uint32(0x7fff_ffff)),
+        (np.int32(-0x0000_0001), np.uint32(0xffff_ffff)),
+        (np.int32(-0x8000_0000), np.uint32(0x8000_0000)),
+    ],
+)
+def test_to_uint32(val: IntTypes, expected: np.uint32):
+    result = to_uint32(val)
+    assert result == expected, f"Got 0x{result:x}, expected 0x{expected:x} for input 0x{val:x}"
 
 
 def test_ram():

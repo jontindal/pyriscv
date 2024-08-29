@@ -9,15 +9,17 @@ IntTypes = int | np.uint32 | np.int32
 
 
 def to_uint32(val: IntTypes) -> np.uint32:
-    if val < 0:
-        val += (1 << 32)
-    return np.uint32(val)
+    int_val = int(val)
+    if int_val < 0:
+        int_val += (1 << 32)
+    return np.uint32(int_val)
 
 
 def to_int32(val: IntTypes) -> np.int32:
-    if val >= (1 << 31):
-        val -= (1 << 32)
-    return np.int32(val)
+    int_val = int(val)
+    if int_val >= (1 << 31):
+        int_val -= (1 << 32)
+    return np.int32(int_val)
 
 
 class Opcodes(Enum):
