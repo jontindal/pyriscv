@@ -1,9 +1,10 @@
 import pytest
 import typing as t
 
-from assem import RegNames as R, asm
+from assem import asm
 from ram import RAM
-from rv32i import RV32I
+from rv32i import Regs as R, RV32I
+import utils as u
 
 import arch_tests
 
@@ -53,7 +54,7 @@ def test_rr_op(
     rv.set_reg(rs2, val2)
     instr_bin = asm(instr, rd, rs1, rs2)
     rv.execute(rv.decode(instr_bin))
-    expected = to_int32(correctval)
+    expected = u.to_int32(correctval)
     assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
 
 
@@ -76,5 +77,5 @@ def test_imm_op(
     rv.set_reg(rs1, val1)
     instr_bin = asm(instr, rd, rs1, imm=imm)
     rv.execute(rv.decode(instr_bin))
-    expected = to_int32(correctval)
+    expected = u.to_int32(correctval)
     assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
