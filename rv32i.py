@@ -121,6 +121,7 @@ class RV32I:
                     + u.bitfield_slice(bits, 19, 12)
                     + u.bitfield_slice(bits, 20, 20)
                     + u.bitfield_slice(bits, 30, 21)
+                    + "0"
                 )
             case Opcodes.LUI | Opcodes.AUIPC:  # U-type
                 imm = u.bits_to_int(u.bitfield_slice(bits, 31, 12))
@@ -137,6 +138,10 @@ class RV32I:
                 return self.execute_imm(instr)
             case Opcodes.BRANCH:
                 return self.execute_branch(instr)
+            case Opcodes.JAL:
+                return self.execute_jal(instr)
+            case Opcodes.JALR:
+                return self.execute_jalr(instr)
             case Opcodes.LUI:
                 return self.execute_lui(instr)
             case Opcodes.AUIPC:
@@ -234,6 +239,15 @@ class RV32I:
 
         if branch:
             self.pc += instr.imm
+
+    def execute_jal(self, instr: DecodedInstr):
+        self.set_reg(instr.rd, self.pc + 4)
+        self.pc += instr.imm
+
+    def execute_jalr(self, instr: DecodedInstr):
+        if instr.funct3 == 0x0:
+            self.set_reg(instr.rd, self.pc + 4)
+            self.pc = self.regs[instr.rs1] + instr.imm
 
     def execute_lui(self, instr: DecodedInstr):
         val = instr.imm << 12
