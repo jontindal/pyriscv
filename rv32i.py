@@ -122,6 +122,8 @@ class RV32I:
                 )
             case Opcodes.LUI | Opcodes.AUIPC:  # U-type
                 imm = u.bits_to_int(u.bitfield_slice(bits, 31, 12))
+            case _:
+                raise RuntimeError
 
         return DecodedInstr(opcode, rd, rs1, rs2, funct3, funct7, imm)
 
@@ -131,6 +133,12 @@ class RV32I:
                 return self.execute_op(instr)
             case Opcodes.OP_IMM:
                 return self.execute_imm(instr)
+            case Opcodes.LUI:
+                return self.execute_lui(instr)
+            case Opcodes.AUIPC:
+                return self.execute_auipc(instr)
+            case _:
+                raise RuntimeError
 
     def execute_op(self, instr: DecodedInstr):
         if instr.funct3 == 0x0 and instr.funct7 == 0x00:  # ADD
@@ -204,3 +212,11 @@ class RV32I:
         elif instr.funct3 == 0x3:  # SLTIU
             result = 1 if u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(instr.imm) else 0
             self.set_reg(instr.rd, result)
+
+    def execute_lui(self, instr: DecodedInstr):
+        val = instr.imm << 12
+        self.set_reg(instr.rd, val)
+
+    def execute_auipc(self, instr: DecodedInstr):
+        val = self.pc + (instr.imm << 12)
+        self.set_reg(instr.rd, val)

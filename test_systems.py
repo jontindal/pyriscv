@@ -79,3 +79,32 @@ def test_imm_op(
     rv.execute(rv.decode(instr_bin))
     expected = u.to_int32(correctval)
     assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
+
+
+@pytest.mark.parametrize("instr,rd,correctval,imm", [
+    ("lui", R.X1, 0x1000, 0x1),
+    ("lui", R.X1, 0x7ffff000, 0x7ffff),
+    ("lui", R.X1, -0x1000, 0xfffff),
+    ("lui", R.X0, 0x0, 0xfffff),
+])
+def test_lui(instr: str, rd: R, correctval: int, imm: int):
+    rv = RV32I(RAM())
+    instr_bin = asm(instr, rd, imm=imm)
+    rv.execute(rv.decode(instr_bin))
+    expected = u.to_int32(correctval)
+    assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
+
+
+@pytest.mark.parametrize("instr,rd,correctval,imm,pc", [
+    ("auipc", R.X1, 0x1000, 0x0, 0x1000),
+    ("auipc", R.X1, 0x2000, 0x1, 0x1000),
+    ("auipc", R.X1, 0x0, -0x1, 0x1000),
+    ("auipc", R.X0, 0x0, 0xfffff, 0x1000),
+])
+def test_auipc(instr: str, rd: R, correctval: int, imm: int, pc: int):
+    rv = RV32I(RAM())
+    instr_bin = asm(instr, rd, imm=imm)
+    rv.set_pc(pc)
+    rv.execute(rv.decode(instr_bin))
+    expected = u.to_int32(correctval)
+    assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
