@@ -99,6 +99,8 @@ class RV32I:
         imm = None
 
         match opcode:
+            case Opcodes.OP:
+                pass
             case Opcodes.OP_IMM | Opcodes.JALR:  # I-type
                 imm = u.bits_to_int(u.bitfield_slice(bits, 31, 20))
             case Opcodes.STORE:  # S-Type
@@ -123,7 +125,7 @@ class RV32I:
             case Opcodes.LUI | Opcodes.AUIPC:  # U-type
                 imm = u.bits_to_int(u.bitfield_slice(bits, 31, 12))
             case _:
-                raise RuntimeError
+                raise RuntimeError(f"Unknown opcode: {opcode}")
 
         return DecodedInstr(opcode, rd, rs1, rs2, funct3, funct7, imm)
 
@@ -133,12 +135,14 @@ class RV32I:
                 return self.execute_op(instr)
             case Opcodes.OP_IMM:
                 return self.execute_imm(instr)
+            case Opcodes.BRANCH:
+                return self.execute_branch(instr)
             case Opcodes.LUI:
                 return self.execute_lui(instr)
             case Opcodes.AUIPC:
                 return self.execute_auipc(instr)
             case _:
-                raise RuntimeError
+                raise RuntimeError(f"Unknown opcode: {instr.opcode}")
 
     def execute_op(self, instr: DecodedInstr):
         if instr.funct3 == 0x0 and instr.funct7 == 0x00:  # ADD
@@ -212,6 +216,24 @@ class RV32I:
         elif instr.funct3 == 0x3:  # SLTIU
             result = 1 if u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(instr.imm) else 0
             self.set_reg(instr.rd, result)
+
+    def execute_branch(self, instr: DecodedInstr):
+        match instr.funct3:
+            case 0x0:  # BEQ
+                branch = self.regs[instr.rs1] == self.regs[instr.rs2]
+            case 0x1:  # BNE
+                branch = self.regs[instr.rs1] != self.regs[instr.rs2]
+            case 0x4:  # BLT
+                branch = self.regs[instr.rs1] < self.regs[instr.rs2]
+            case 0x5:  # BGT
+                branch = self.regs[instr.rs1] >= self.regs[instr.rs2]
+            case 0x6:  # BLTU
+                branch = u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(self.regs[instr.rs2])
+            case 0x7:  # BGEU
+                branch = u.to_uint32(self.regs[instr.rs1]) >= u.to_uint32(self.regs[instr.rs2])
+
+        if branch:
+            self.pc += instr.imm
 
     def execute_lui(self, instr: DecodedInstr):
         val = instr.imm << 12

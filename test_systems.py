@@ -81,6 +81,42 @@ def test_imm_op(
     assert rv.regs[rd] == expected, f"Found 0x{rv.regs[rd]:x}, expected 0x{expected:x}"
 
 
+@pytest.mark.parametrize("instr,rs1,rs2,should_branch,val1,val2", [
+    ("beq", R.X20, R.X21, True, 0x333334, 0x333334),
+    ("beq", R.X20, R.X21, False, 0x333334, 0x333333),
+    ("bne", R.X20, R.X21, False, 0x333334, 0x333334),
+    ("bne", R.X20, R.X21, True, 0x333334, 0x333333),
+    ("blt", R.X20, R.X21, False, 0x33333334, 0x33333334),
+    ("blt", R.X20, R.X21, False, -0x4001, -0x4001),
+    ("blt", R.X20, R.X21, True, -0x201, 0x5),
+    ("blt", R.X20, R.X21, False, 0x33333334, -0x80000000),
+    ("bge", R.X20, R.X21, True, 0x33333334, 0x33333334),
+    ("bge", R.X20, R.X21, True, -0x4001, -0x4001),
+    ("bge", R.X20, R.X21, False, -0x201, 0x5),
+    ("bge", R.X20, R.X21, True, 0x33333334, -0x80000000),
+    ("bltu", R.X20, R.X21, True, 0x0, 0xfffffffe),
+    ("bltu", R.X20, R.X21, True, 0xfffffffe, 0xffffffff),
+    ("bltu", R.X20, R.X21, False, 0x2000000, 0x20),
+    ("bltu", R.X20, R.X21, False, 0xfffff7ff, 0x40),
+    ("bgeu", R.X20, R.X21, False, 0x0, 0xfffffffe),
+    ("bgeu", R.X20, R.X21, False, 0xfffffffe, 0xffffffff),
+    ("bgeu", R.X20, R.X21, True, 0x2000000, 0x20),
+    ("bgeu", R.X20, R.X21, True, 0xfffff7ff, 0x40),
+])
+def test_branch(instr: str, rs1: R, rs2: R, should_branch: bool, val1: int, val2: int):
+    IMM = 0x10
+    PC = 0x1000
+    expected_pc = IMM + PC if should_branch else PC
+
+    rv = RV32I(RAM())
+    rv.set_pc(PC)
+    rv.set_reg(rs1, val1)
+    rv.set_reg(rs2, val2)
+    instr_bin = asm(instr, rs1=rs1, rs2=rs2, imm=IMM)
+    rv.execute(rv.decode(instr_bin))
+    assert rv.pc == expected_pc, f"Found 0x{rv.pc:x}, expected 0x{expected_pc:x}"
+
+
 @pytest.mark.parametrize("instr,rd,correctval,imm", [
     ("lui", R.X1, 0x1000, 0x1),
     ("lui", R.X1, 0x7ffff000, 0x7ffff),
