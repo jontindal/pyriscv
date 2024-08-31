@@ -70,8 +70,8 @@ class RV32I:
     regs: np.ndarray[32, np.int32]
     pc: np.int32
 
-    def __init__(self, memory: np.ndarray[t.Any, np.uint8]) -> None:
-        self.memory = memory
+    def __init__(self, mem_size: int = 0x1000) -> None:
+        self.memory = np.zeros(mem_size, dtype=np.uint8)
         self.regs = np.zeros(32, dtype=np.int32)
         self.pc = np.int32(0)
 
@@ -101,7 +101,7 @@ class RV32I:
         match opcode:
             case Opcodes.OP:
                 pass
-            case Opcodes.OP_IMM | Opcodes.JALR:  # I-type
+            case Opcodes.OP_IMM | Opcodes.LOAD | Opcodes.JALR:  # I-type
                 imm = u.bits_to_int(u.bitfield_slice(bits, 31, 20))
             case Opcodes.STORE:  # S-Type
                 imm = u.bits_to_int(
@@ -136,6 +136,10 @@ class RV32I:
                 return self.execute_op(instr)
             case Opcodes.OP_IMM:
                 return self.execute_imm(instr)
+            case Opcodes.LOAD:
+                return self.execute_load(instr)
+            case Opcodes.STORE:
+                return self.execute_store(instr)
             case Opcodes.BRANCH:
                 return self.execute_branch(instr)
             case Opcodes.JAL:
@@ -219,8 +223,51 @@ class RV32I:
             result = 1 if self.regs[instr.rs1] < u.to_int32(instr.imm) else 0
             self.set_reg(instr.rd, result)
         elif instr.funct3 == 0x3:  # SLTIU
-            result = 1 if u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(instr.imm) else 0
+            result = (
+                1 if u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(instr.imm) else 0
+            )
             self.set_reg(instr.rd, result)
+
+    def execute_load(self, instr: DecodedInstr):
+        addr = self.regs[instr.rs1] + instr.imm
+        match instr.funct3:
+            case 0x0:  # LB
+                val = u.bits_to_int(u.int_to_bits(self.memory[addr], 8))
+            case 0x1:  # LH
+                val = u.bits_to_int(
+                    u.int_to_bits(self.memory[addr + 1], 8)
+                    + u.int_to_bits(self.memory[addr], 8)
+                )
+            case 0x2:  # LW
+                val = u.bits_to_int(
+                    u.int_to_bits(self.memory[addr + 3], 8)
+                    + u.int_to_bits(self.memory[addr + 2], 8)
+                    + u.int_to_bits(self.memory[addr + 1], 8)
+                    + u.int_to_bits(self.memory[addr], 8)
+                )
+            case 0x4:  # LBU
+                val = u.bits_to_uint(u.int_to_bits(self.memory[addr], 8))
+            case 0x5:  # LHU
+                val = u.bits_to_uint(
+                    u.int_to_bits(self.memory[addr + 1], 8)
+                    + u.int_to_bits(self.memory[addr], 8)
+                )
+        self.set_reg(instr.rd, val)
+
+    def execute_store(self, instr: DecodedInstr):
+        addr = self.regs[instr.rs1] + instr.imm
+        reg_bits = u.int_to_bits(self.regs[instr.rs2], 32)
+        match instr.funct3:
+            case 0x0:  # SB
+                self.memory[addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
+            case 0x1:  # SH
+                self.memory[addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
+                self.memory[addr + 1] = u.bits_to_uint(u.bitfield_slice(reg_bits, 15, 8))
+            case 0x2:  # SW
+                self.memory[addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
+                self.memory[addr + 1] = u.bits_to_uint(u.bitfield_slice(reg_bits, 15, 8))
+                self.memory[addr + 2] = u.bits_to_uint(u.bitfield_slice(reg_bits, 23, 16))
+                self.memory[addr + 3] = u.bits_to_uint(u.bitfield_slice(reg_bits, 31, 24))
 
     def execute_branch(self, instr: DecodedInstr):
         match instr.funct3:
@@ -233,9 +280,13 @@ class RV32I:
             case 0x5:  # BGT
                 branch = self.regs[instr.rs1] >= self.regs[instr.rs2]
             case 0x6:  # BLTU
-                branch = u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(self.regs[instr.rs2])
+                branch = u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(
+                    self.regs[instr.rs2]
+                )
             case 0x7:  # BGEU
-                branch = u.to_uint32(self.regs[instr.rs1]) >= u.to_uint32(self.regs[instr.rs2])
+                branch = u.to_uint32(self.regs[instr.rs1]) >= u.to_uint32(
+                    self.regs[instr.rs2]
+                )
 
         if branch:
             self.pc += instr.imm
