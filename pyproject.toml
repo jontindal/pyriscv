@@ -11,6 +11,9 @@ dependencies = [
 dev = [
     "pytest",
     "riscof~=1.25.3",
+    "ruff",
+    "mypy",
+    "pre-commit",
 ]
 
 [project.scripts]
