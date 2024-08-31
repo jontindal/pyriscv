@@ -3,11 +3,11 @@ import typing as t
 
 import numpy as np
 
-from assem import asm
-from rv32i import Regs as R, RV32I
-import utils as u
+from pyriscv.assem import asm
+from pyriscv.rv32i import Regs as R, RV32I
+import pyriscv.utils as u
 
-import arch_tests
+import alu_tests
 
 
 INITIAL_PC = 0x1000
@@ -33,16 +33,16 @@ def test_asm_single(asm_qwargs: dict[str, t.Any], expected: int):
 
 @pytest.mark.parametrize(
     "instr,rd,rs1,rs2,correctval,val1,val2",
-    arch_tests.ADD_TESTS
-    + arch_tests.SUB_TESTS
-    + arch_tests.XOR_TESTS
-    + arch_tests.OR_TESTS
-    + arch_tests.AND_TESTS
-    + arch_tests.SLL_TESTS
-    + arch_tests.SRL_TESTS
-    + arch_tests.SRA_TESTS
-    + arch_tests.SLT_TESTS
-    + arch_tests.SLTU_TESTS,
+    alu_tests.ADD_TESTS
+    + alu_tests.SUB_TESTS
+    + alu_tests.XOR_TESTS
+    + alu_tests.OR_TESTS
+    + alu_tests.AND_TESTS
+    + alu_tests.SLL_TESTS
+    + alu_tests.SRL_TESTS
+    + alu_tests.SRA_TESTS
+    + alu_tests.SLT_TESTS
+    + alu_tests.SLTU_TESTS,
 )
 def test_rr_op(
     instr: str, rd: R, rs1: R, rs2: R, correctval: int, val1: int, val2: int
@@ -58,15 +58,15 @@ def test_rr_op(
 
 @pytest.mark.parametrize(
     "instr,rd,rs1,correctval,val1,imm",
-    arch_tests.ADDI_TESTS
-    + arch_tests.XORI_TESTS
-    + arch_tests.ORI_TESTS
-    + arch_tests.ANDI_TESTS
-    + arch_tests.SLLI_TESTS
-    + arch_tests.SRLI_TESTS
-    + arch_tests.SRAI_TESTS
-    + arch_tests.SLTI_TESTS
-    + arch_tests.SLTIU_TESTS,
+    alu_tests.ADDI_TESTS
+    + alu_tests.XORI_TESTS
+    + alu_tests.ORI_TESTS
+    + alu_tests.ANDI_TESTS
+    + alu_tests.SLLI_TESTS
+    + alu_tests.SRLI_TESTS
+    + alu_tests.SRAI_TESTS
+    + alu_tests.SLTI_TESTS
+    + alu_tests.SLTIU_TESTS,
 )
 def test_imm_op(instr: str, rd: R, rs1: R, correctval: int, val1: int, imm: int):
     rv = RV32I()

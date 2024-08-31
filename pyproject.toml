@@ -1,0 +1,16 @@
+[project]
+name = "pyriscv"
+version = "0.1.0"
+description = "RISC-V emulator for the RV32I instruction set"
+dependencies = [
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
+
+[build-system]
+requires = ["setuptools>=45"]
+build-backend = 'setuptools.build_meta'

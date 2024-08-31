@@ -2,7 +2,7 @@ import pytest
 
 import numpy as np
 
-import utils as u
+import pyriscv.utils as u
 
 
 @pytest.mark.parametrize(

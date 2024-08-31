@@ -1,8 +1,8 @@
 """
-Sample of the ffficial RISC-V tests from
+Sample of the official RISC-V tests for OP and OP_IMM instructions from
 https://github.com/riscv-non-isa/riscv-arch-test/blob/main/riscv-test-suite
 """
-from rv32i import Regs as R
+from pyriscv.rv32i import Regs as R
 
 ADD_TESTS = [
     ("add", R.X24, R.X4,  R.X24, 0x80000000, 0x7fffffff, 0x1),

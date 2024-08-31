@@ -1,6 +1,5 @@
-from utils import int_to_bits, bits_to_int, bitfield_slice
-
-from rv32i import Regs
+from pyriscv.rv32i import Regs
+from pyriscv.utils import int_to_bits, bits_to_int, bitfield_slice
 
 
 ASM_INSTR_FORMATS = {
@@ -45,7 +44,8 @@ ASM_INSTR_FORMATS = {
 
 
 def asm(instr: str, rd: Regs | None = None, rs1: Regs | None = None,
-        rs2: Regs | None = None, imm: int | None = None,):
+        rs2: Regs | None = None, imm: int | None = None) -> int:
+    """Converts assembly instruction to binary"""
     typ, opcode_bits = ASM_INSTR_FORMATS[instr]
     funct7, funct3, opcode = opcode_bits.split("_")
 

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from enum import IntEnum
-import typing as t
 
 import numpy as np
+import numpy.typing as npt
 
-import utils as u
+import pyriscv.utils as u
 
 
 class Regs(IntEnum):
@@ -66,8 +66,8 @@ class DecodedInstr:
 
 
 class RV32I:
-    memory: np.ndarray[t.Any, np.uint8]
-    regs: np.ndarray[32, np.int32]
+    memory: npt.NDArray[np.uint8]
+    regs: npt.NDArray[np.int32]
     pc: np.int32
 
     def __init__(self, mem_size: int = 0x1000) -> None:
@@ -78,7 +78,7 @@ class RV32I:
     def set_pc(self, val: u.IntTypes) -> None:
         self.pc = u.to_int32(val)
 
-    def set_reg(self, index: int, val: u.IntTypes) -> None:
+    def set_reg(self, index: Regs, val: u.IntTypes) -> None:
         if index == 0:
             return
         self.regs[index] = u.to_int32(val)
