@@ -4,6 +4,7 @@ from enum import IntEnum
 import numpy as np
 import numpy.typing as npt
 
+from pyriscv import mem
 import pyriscv.utils as u
 
 
@@ -66,12 +67,12 @@ class DecodedInstr:
 
 
 class RV32I:
-    memory: npt.NDArray[np.uint8]
+    memory: mem.RVMemory
     regs: npt.NDArray[np.int32]
     pc: np.int32
 
-    def __init__(self, mem_size: int = 0x1000) -> None:
-        self.memory = np.zeros(mem_size, dtype=np.uint8)
+    def __init__(self) -> None:
+        self.memory = mem.RVMemory()
         self.regs = np.zeros(32, dtype=np.int32)
         self.pc = np.int32(0)
 
@@ -229,45 +230,35 @@ class RV32I:
             self.set_reg(instr.rd, result)
 
     def execute_load(self, instr: DecodedInstr):
-        addr = self.regs[instr.rs1] + instr.imm
+        addr = u.to_uint32(self.regs[instr.rs1] + instr.imm)
         match instr.funct3:
             case 0x0:  # LB
-                val = u.bits_to_int(u.int_to_bits(self.memory[addr], 8))
+                read_val = self.memory.read(addr, mem.DataSize.BYTE)
+                val = u.bits_to_int(u.int_to_bits(read_val, 8))
             case 0x1:  # LH
-                val = u.bits_to_int(
-                    u.int_to_bits(self.memory[addr + 1], 8)
-                    + u.int_to_bits(self.memory[addr], 8)
-                )
+                read_val = self.memory.read(addr, mem.DataSize.HALF)
+                val = u.bits_to_int(u.int_to_bits(read_val, 16))
             case 0x2:  # LW
-                val = u.bits_to_int(
-                    u.int_to_bits(self.memory[addr + 3], 8)
-                    + u.int_to_bits(self.memory[addr + 2], 8)
-                    + u.int_to_bits(self.memory[addr + 1], 8)
-                    + u.int_to_bits(self.memory[addr], 8)
-                )
+                read_val = self.memory.read(addr, mem.DataSize.WORD)
+                val = u.bits_to_int(u.int_to_bits(read_val, 32))
             case 0x4:  # LBU
-                val = u.bits_to_uint(u.int_to_bits(self.memory[addr], 8))
+                read_val = self.memory.read(addr, mem.DataSize.BYTE)
+                val = u.bits_to_uint(u.int_to_bits(read_val, 8))
             case 0x5:  # LHU
-                val = u.bits_to_uint(
-                    u.int_to_bits(self.memory[addr + 1], 8)
-                    + u.int_to_bits(self.memory[addr], 8)
-                )
+                read_val = self.memory.read(addr, mem.DataSize.HALF)
+                val = u.bits_to_uint(u.int_to_bits(read_val, 16))
         self.set_reg(instr.rd, val)
 
     def execute_store(self, instr: DecodedInstr):
-        addr = self.regs[instr.rs1] + instr.imm
-        reg_bits = u.int_to_bits(self.regs[instr.rs2], 32)
+        addr = u.to_uint32(self.regs[instr.rs1] + instr.imm)
+        value = u.to_uint32(self.regs[instr.rs2])
         match instr.funct3:
             case 0x0:  # SB
-                self.memory[addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
+                self.memory.write(addr=addr, size=mem.DataSize.BYTE, value=value)
             case 0x1:  # SH
-                self.memory[addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
-                self.memory[addr + 1] = u.bits_to_uint(u.bitfield_slice(reg_bits, 15, 8))
+                self.memory.write(addr, mem.DataSize.HALF, value)
             case 0x2:  # SW
-                self.memory[addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
-                self.memory[addr + 1] = u.bits_to_uint(u.bitfield_slice(reg_bits, 15, 8))
-                self.memory[addr + 2] = u.bits_to_uint(u.bitfield_slice(reg_bits, 23, 16))
-                self.memory[addr + 3] = u.bits_to_uint(u.bitfield_slice(reg_bits, 31, 24))
+                self.memory.write(addr=addr, size=mem.DataSize.WORD, value=value)
 
     def execute_branch(self, instr: DecodedInstr):
         match instr.funct3:

@@ -78,7 +78,7 @@ def test_imm_op(instr: str, rd: R, rs1: R, correctval: int, val1: int, imm: int)
 
 
 @pytest.mark.parametrize(
-    "instr,mem_addr,initial_mem,rd,rs1,correctval,val1,imm",
+    "instr,ram_addr,initial_mem,rd,rs1,correctval,val1,imm",
     [
         ("lw", 0x10, [0x10, 0x20, 0x30, 0x40], R.X1, R.X2, 0x40302010, 0x0, 0x10),
         ("lw", 0x30, [0x10, 0x20, 0x30, 0x40], R.X1, R.X2, 0x40302010, 0x20, 0x10),
@@ -97,7 +97,7 @@ def test_imm_op(instr: str, rd: R, rs1: R, correctval: int, val1: int, imm: int)
 )
 def test_load(
     instr: str,
-    mem_addr: int,
+    ram_addr: int,
     initial_mem: list[int],
     rd: R,
     rs1: R,
@@ -106,7 +106,8 @@ def test_load(
     imm: int,
 ):
     rv = RV32I()
-    rv.memory[mem_addr: mem_addr + 4] = initial_mem
+    rv.memory.ram.bytes[ram_addr: ram_addr + 4] = initial_mem
+    val1 = val1 + rv.memory.ram.start_offset
     rv.set_reg(rs1, val1)
     instr_bin = asm(instr, rd, rs1, imm=imm)
     rv.execute(rv.decode(instr_bin))
@@ -115,7 +116,7 @@ def test_load(
 
 
 @pytest.mark.parametrize(
-    "instr,rs1,rs2,val1,val2,imm,mem_addr,expected_mem",
+    "instr,rs1,rs2,val1,val2,imm,ram_addr,expected_mem",
     [
         ("sw", R.X2, R.X3, 0x0, 0x40302010, 0x10, 0x10, [0x10, 0x20, 0x30, 0x40]),
         ("sw", R.X2, R.X3, 0x20, 0x40302010, 0x10, 0x30, [0x10, 0x20, 0x30, 0x40]),
@@ -135,16 +136,17 @@ def test_store(
     val1: int,
     val2: int,
     imm: int,
-    mem_addr: int,
+    ram_addr: int,
     expected_mem: list[int],
 ):
     rv = RV32I()
+    val1 = val1 + rv.memory.ram.start_offset
     rv.set_reg(rs1, val1)
     rv.set_reg(rs2, val2)
     instr_bin = asm(instr, rs1=rs1, rs2=rs2, imm=imm)
     rv.execute(rv.decode(instr_bin))
     expected = np.array(expected_mem, dtype=np.uint8)
-    np.testing.assert_array_equal(rv.memory[mem_addr: mem_addr + 4], expected)
+    np.testing.assert_array_equal(rv.memory.ram.bytes[ram_addr: ram_addr + 4], expected)
 
 
 @pytest.mark.parametrize(
