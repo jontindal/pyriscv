@@ -1,4 +1,5 @@
 from enum import IntEnum
+import itertools
 
 import numpy as np
 import numpy.typing as npt
@@ -68,6 +69,11 @@ class RVMemory:
     def __init__(self) -> None:
         self.rom = MemoryRegion(0x8000, 0x80000000)  # 32KB
         self.ram = MemoryRegion(0x1000, 0x90000000)  # 4KB
+
+    def load_rom(self, rom_bytes: bytes) -> None:
+        start_addr = self.rom.start_offset
+        for addr, byte in zip(itertools.count(start_addr), rom_bytes):
+            self.rom.write(addr, DataSize.BYTE, byte)
 
     def write(self, addr: np.uint32, size: DataSize, value: np.uint32) -> None:
         if self.ram.addr_in_region(addr):

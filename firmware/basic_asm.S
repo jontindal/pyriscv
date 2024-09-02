@@ -2,8 +2,9 @@
 .text
 
 main:
-    addi x1 , x0,   1000
-    addi x1 , x1,   1000
+    addi a1 , x0,   1000
+    addi a1 , a1,   1000
+    ret
 
 .data
 variable:

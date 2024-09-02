@@ -79,10 +79,17 @@ class RV32I:
     def set_pc(self, val: u.IntTypes) -> None:
         self.pc = u.to_int32(val)
 
+    def inc_pc(self) -> None:
+        self.pc += mem.DataSize.WORD
+
     def set_reg(self, index: Regs, val: u.IntTypes) -> None:
         if index == 0:
             return
         self.regs[index] = u.to_int32(val)
+
+    def fetch(self) -> np.uint32:
+        instr_addr = u.to_uint32(self.pc)
+        return self.memory.read(instr_addr, mem.DataSize.WORD)
 
     @staticmethod
     def decode(instr: np.uint32):
@@ -192,6 +199,7 @@ class RV32I:
                 else 0
             )
             self.set_reg(instr.rd, result)
+        self.inc_pc()
 
     def execute_imm(self, instr: DecodedInstr):
         if instr.funct3 == 0x0:  # ADDI
@@ -228,6 +236,7 @@ class RV32I:
                 1 if u.to_uint32(self.regs[instr.rs1]) < u.to_uint32(instr.imm) else 0
             )
             self.set_reg(instr.rd, result)
+        self.inc_pc()
 
     def execute_load(self, instr: DecodedInstr):
         addr = u.to_uint32(self.regs[instr.rs1] + instr.imm)
@@ -248,6 +257,7 @@ class RV32I:
                 read_val = self.memory.read(addr, mem.DataSize.HALF)
                 val = u.bits_to_uint(u.int_to_bits(read_val, 16))
         self.set_reg(instr.rd, val)
+        self.inc_pc()
 
     def execute_store(self, instr: DecodedInstr):
         addr = u.to_uint32(self.regs[instr.rs1] + instr.imm)
@@ -259,6 +269,7 @@ class RV32I:
                 self.memory.write(addr, mem.DataSize.HALF, value)
             case 0x2:  # SW
                 self.memory.write(addr=addr, size=mem.DataSize.WORD, value=value)
+        self.inc_pc()
 
     def execute_branch(self, instr: DecodedInstr):
         match instr.funct3:
@@ -281,6 +292,8 @@ class RV32I:
 
         if branch:
             self.pc += instr.imm
+        else:
+            self.inc_pc()
 
     def execute_jal(self, instr: DecodedInstr):
         self.set_reg(instr.rd, self.pc + 4)
@@ -290,11 +303,32 @@ class RV32I:
         if instr.funct3 == 0x0:
             self.set_reg(instr.rd, self.pc + 4)
             self.pc = self.regs[instr.rs1] + instr.imm
+        else:
+            self.inc_pc()
 
     def execute_lui(self, instr: DecodedInstr):
         val = instr.imm << 12
         self.set_reg(instr.rd, val)
+        self.inc_pc()
 
     def execute_auipc(self, instr: DecodedInstr):
         val = self.pc + (instr.imm << 12)
         self.set_reg(instr.rd, val)
+        self.inc_pc()
+
+    def run_bin(self, hex_filepath: str, max_instructions: int = 100):
+        rom_bytes = open(hex_filepath, "rb").read()
+        self.memory.load_rom(rom_bytes)
+        self.pc = self.memory.rom.start_offset
+
+        for i in range(max_instructions):
+            bin_instr = self.fetch()
+            decoded_instr = self.decode(bin_instr)
+
+            print(f"addr: 0x{u.to_uint32(self.pc):x}\tbin instr: 0x{bin_instr:x}\t{decoded_instr = }")
+            self.execute(decoded_instr)
+
+
+if __name__ == "__main__":
+    rv = RV32I()
+    rv.run_bin("firmware/build/basic_c.bin")
