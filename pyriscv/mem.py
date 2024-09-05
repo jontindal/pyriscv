@@ -21,21 +21,24 @@ class MemoryRegion:
         self.bytes = np.zeros(size, dtype=np.uint8)
         self.start_offset = offset
 
-    def local_addr(self, addr: int) -> int:
-        return addr - self.start_offset
+    @property
+    def size(self):
+        return self.bytes.size
 
     def addr_in_region(self, addr: np.uint32) -> bool:
         return self.start_offset <= addr and addr <= self.start_offset + self.bytes.size
 
+    def _local_addr(self, addr: int) -> int:
+        return addr - self.start_offset
+
     def read(self, addr: int, size: DataSize) -> np.uint32:
-        local_addr = self.local_addr(addr)
+        local_addr = self._local_addr(addr)
         match size:
             case DataSize.BYTE:
                 bits = u.int_to_bits(self.bytes[local_addr], 8)
             case DataSize.HALF:
-                bits = (
-                    u.int_to_bits(self.bytes[local_addr + 1], 8)
-                    + u.int_to_bits(self.bytes[local_addr], 8)
+                bits = u.int_to_bits(self.bytes[local_addr + 1], 8) + u.int_to_bits(
+                    self.bytes[local_addr], 8
                 )
             case DataSize.WORD:
                 bits = (
@@ -47,19 +50,33 @@ class MemoryRegion:
         return u.to_uint32(u.bits_to_uint(bits))
 
     def write(self, addr: int, size: DataSize, value: np.uint32):
-        local_addr = self.local_addr(addr)
+        local_addr = self._local_addr(addr)
         reg_bits = u.int_to_bits(value, 32)
         match size:
             case DataSize.BYTE:
-                self.bytes[local_addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
+                self.bytes[local_addr] = u.bits_to_uint(
+                    u.bitfield_slice(reg_bits, 7, 0)
+                )
             case DataSize.HALF:
-                self.bytes[local_addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
-                self.bytes[local_addr + 1] = u.bits_to_uint(u.bitfield_slice(reg_bits, 15, 8))
+                self.bytes[local_addr] = u.bits_to_uint(
+                    u.bitfield_slice(reg_bits, 7, 0)
+                )
+                self.bytes[local_addr + 1] = u.bits_to_uint(
+                    u.bitfield_slice(reg_bits, 15, 8)
+                )
             case DataSize.WORD:
-                self.bytes[local_addr] = u.bits_to_uint(u.bitfield_slice(reg_bits, 7, 0))
-                self.bytes[local_addr + 1] = u.bits_to_uint(u.bitfield_slice(reg_bits, 15, 8))
-                self.bytes[local_addr + 2] = u.bits_to_uint(u.bitfield_slice(reg_bits, 23, 16))
-                self.bytes[local_addr + 3] = u.bits_to_uint(u.bitfield_slice(reg_bits, 31, 24))
+                self.bytes[local_addr] = u.bits_to_uint(
+                    u.bitfield_slice(reg_bits, 7, 0)
+                )
+                self.bytes[local_addr + 1] = u.bits_to_uint(
+                    u.bitfield_slice(reg_bits, 15, 8)
+                )
+                self.bytes[local_addr + 2] = u.bits_to_uint(
+                    u.bitfield_slice(reg_bits, 23, 16)
+                )
+                self.bytes[local_addr + 3] = u.bits_to_uint(
+                    u.bitfield_slice(reg_bits, 31, 24)
+                )
 
 
 class RVMemory:
@@ -70,10 +87,17 @@ class RVMemory:
         self.rom = MemoryRegion(0x8000, 0x80000000)  # 32KB
         self.ram = MemoryRegion(0x1000, 0x90000000)  # 4KB
 
-    def load_rom(self, rom_bytes: bytes) -> None:
+    def load_program(self, prog_bytes: bytes) -> int:
+        """Load program and return program start address"""
+        assert (
+            len(prog_bytes) <= self.rom.size
+        ), f"Program is too large to fit into memory, requires {len(prog_bytes)} bytes but only {self.rom.size} bytes available"
+
         start_addr = self.rom.start_offset
-        for addr, byte in zip(itertools.count(start_addr), rom_bytes):
+        for addr, byte in zip(itertools.count(start_addr), prog_bytes):
             self.rom.write(addr, DataSize.BYTE, byte)
+
+        return start_addr
 
     def write(self, addr: np.uint32, size: DataSize, value: np.uint32) -> None:
         if self.ram.addr_in_region(addr):
@@ -88,3 +112,17 @@ class RVMemory:
             return self.ram.read(addr, size)
         else:
             raise RuntimeError(f"Out of bounds read to addr: {addr}")
+
+
+class RiscofMemory(RVMemory):
+    """
+    Memory for RISCOF tests.
+    All program memory goes into RAM.
+    """
+
+    ram: MemoryRegion
+
+    def __init__(self) -> None:
+        # Riscof requires 1.7MB for jal-01.S
+        self.ram = MemoryRegion(0x200000, 0x80000000)  # 2MB
+        self.rom = self.ram  # To load program into RAM instead
