@@ -12,6 +12,10 @@ dev = [
     "riscof~=1.25.3",
 ]
 
+[project.scripts]
+pyriscv = "pyriscv.cli:pyriscv"
+pyriscv-riscof = "pyriscv.cli:riscof"
+
 [build-system]
 requires = ["setuptools>=45"]
 build-backend = 'setuptools.build_meta'
