@@ -28,7 +28,7 @@ class pyriscv(pluginTemplate):
         # emulator, this variable could point to where the iss binary is located. If 'PATH variable
         # is missing in the config.ini we can hardcode the alternate here.
         self.dut_exe = os.path.join(
-            config["PATH"] if "PATH" in config else "", "pyriscv"
+            config["PATH"] if "PATH" in config else "", "pyriscv-riscof"
         )
 
         # Number of parallel jobs that can be spawned off by RISCOF
@@ -78,8 +78,6 @@ class pyriscv(pluginTemplate):
             + archtest_env
             + " {2} -o {3} {4}"
         )
-
-        # add more utility snippets here
 
     def build(self, isa_yaml, platform_yaml):
 
@@ -138,7 +136,8 @@ class pyriscv(pluginTemplate):
             test_dir = testentry["work_dir"]
 
             # name of the elf file after compilation of the test
-            elf = "my.elf"
+            elf_file = "test.elf"
+            bin_file = "test.bin"
 
             # name of the signature file as per requirement of RISCOF. RISCOF expects the signature to
             # be named as DUT-<dut-name>.signature. The below variable creates an absolute path of
@@ -152,26 +151,23 @@ class pyriscv(pluginTemplate):
 
             # substitute all variables in the compile command that we created in the initialize
             # function
-            cmd = self.compile_cmd.format(
-                testentry["isa"].lower(), self.xlen, test, elf, compile_macros
+            compile_cmd = self.compile_cmd.format(
+                testentry["isa"].lower(), self.xlen, test, elf_file, compile_macros
             )
+
+            copy_command = f"riscv{self.xlen}-unknown-elf-objcopy --strip-all -O binary {elf_file} {bin_file}"
 
             # if the user wants to disable running the tests and only compile the tests, then
             # the "else" clause is executed below assigning the sim command to simple no action
             # echo statement.
             if self.target_run:
                 # set up the simulation command. Template is for spike. Please change.
-                simcmd = (
-                    self.dut_exe
-                    + " --isa={0} +signature={1} +signature-granularity=4 {2}".format(
-                        self.isa, sig_file, elf
-                    )
-                )
+                simcmd = f"{self.dut_exe} {bin_file} --test-signature={sig_file}"
             else:
                 simcmd = 'echo "NO RUN"'
 
             # concatenate all commands that need to be executed within a make-target.
-            execute = "@cd {0}; {1}; {2};".format(testentry["work_dir"], cmd, simcmd)
+            execute = f"@cd {testentry['work_dir']}; {compile_cmd}; {copy_command}; {simcmd};"
 
             # create a target. The makeutil will create a target with the name "TARGET<num>" where num
             # starts from 0 and increments automatically for each new target that is added

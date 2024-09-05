@@ -11,11 +11,13 @@
         .word 4;
 
 //RV_COMPLIANCE_HALT
-#define RVMODEL_HALT                                              \
-  li x1, 1;                                                                   \
-  write_tohost:                                                               \
-    sw x1, tohost, t5;                                                        \
-    j write_tohost;
+#define RVMODEL_HALT \
+  li x1, 1;                 \
+  la a0, begin_signature;   \
+  la a1, end_signature;     \
+  exit:                     \
+    ebreak;                 \
+    j exit;
 
 #define RVMODEL_BOOT
 
@@ -43,14 +45,9 @@
 //RVTEST_IO_ASSERT_DFPR_EQ
 #define RVMODEL_IO_ASSERT_DFPR_EQ(_D, _R, _I)
 
-#define RVMODEL_SET_MSW_INT       \
- li t1, 1;                         \
- li t2, 0x2000000;                 \
- sw t1, 0(t2);
+#define RVMODEL_SET_MSW_INT
 
-#define RVMODEL_CLEAR_MSW_INT     \
- li t2, 0x2000000;                 \
- sw x0, 0(t2);
+#define RVMODEL_CLEAR_MSW_INT
 
 #define RVMODEL_CLEAR_MTIMER_INT
 

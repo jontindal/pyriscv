@@ -6,4 +6,7 @@ dist/
 __pycache__/
 *.so
 *~
+
 .venv
+
+riscof_work/
