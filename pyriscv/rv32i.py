@@ -301,8 +301,11 @@ class RV32I:
 
     def execute_jalr(self, instr: DecodedInstr):
         if instr.funct3 == 0x0:
+            dest_addr = self.regs[instr.rs1] + instr.imm
+            dest_addr &= ~1  # RISC-V spec defines that LSB should be set to 0
+
             self.set_reg(instr.rd, self.pc + 4)
-            self.pc = self.regs[instr.rs1] + instr.imm
+            self.pc = dest_addr
         else:
             self.inc_pc()
 
