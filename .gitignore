@@ -10,3 +10,4 @@ __pycache__/
 .venv
 
 riscof_work/
+riscv-arch-test/
