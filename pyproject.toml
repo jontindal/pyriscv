@@ -2,6 +2,7 @@
 name = "pyriscv"
 version = "0.1.0"
 description = "RISC-V emulator for the RV32I instruction set"
+requires-python = ">=3.10"
 dependencies = [
     "numpy~=1.26",
 ]
