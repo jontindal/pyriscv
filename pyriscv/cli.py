@@ -3,14 +3,14 @@ import argparse
 from pyriscv import mem, rv32i, utils
 
 
-def pyriscv():
+def pyriscv() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("bin_filepath", type=str, help="Path to program binary")
 
     args = parser.parse_args()
     bin_filepath = args.bin_filepath
 
-    rv = rv32i.RV32I(mem.RiscofMemory())
+    rv = rv32i.RV32I()
     rv.load_bin(bin_filepath)
 
     rv.run_program()

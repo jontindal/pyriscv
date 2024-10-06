@@ -348,7 +348,7 @@ class RV32I:
         self.inc_pc()
 
     def run_program(self, max_instructions: int | None = None):
-        """Run program until ECALL instruction or after max_instructions"""
+        """Run program until ECALL/EBREAK instruction or after max_instructions"""
         for i in itertools.count():
             if max_instructions is not None:
                 if not i < max_instructions:
