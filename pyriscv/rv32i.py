@@ -1,11 +1,20 @@
 from dataclasses import dataclass
 from enum import IntEnum
+import itertools
 
 import numpy as np
 import numpy.typing as npt
 
 from pyriscv import mem
 import pyriscv.utils as u
+
+
+class ECall(Exception):
+    pass
+
+
+class EBreak(Exception):
+    pass
 
 
 class Regs(IntEnum):
@@ -53,6 +62,8 @@ class Opcodes(IntEnum):
     JALR = 0b1100111
     LUI = 0b0110111
     AUIPC = 0b0010111
+    MISC_MEM = 0b0001111
+    SYSTEM = 0b1110011
 
 
 @dataclass
@@ -71,8 +82,8 @@ class RV32I:
     regs: npt.NDArray[np.int32]
     pc: np.int32
 
-    def __init__(self) -> None:
-        self.memory = mem.RVMemory()
+    def __init__(self, memory: mem.RVMemory | None = None) -> None:
+        self.memory = memory if memory is not None else mem.RVMemory()
         self.regs = np.zeros(32, dtype=np.int32)
         self.pc = np.int32(0)
 
@@ -109,7 +120,7 @@ class RV32I:
         match opcode:
             case Opcodes.OP:
                 pass
-            case Opcodes.OP_IMM | Opcodes.LOAD | Opcodes.JALR:  # I-type
+            case Opcodes.OP_IMM | Opcodes.LOAD | Opcodes.JALR | Opcodes.MISC_MEM | Opcodes.SYSTEM:  # I-type
                 imm = u.bits_to_int(u.bitfield_slice(bits, 31, 20))
             case Opcodes.STORE:  # S-Type
                 imm = u.bits_to_int(
@@ -158,6 +169,10 @@ class RV32I:
                 return self.execute_lui(instr)
             case Opcodes.AUIPC:
                 return self.execute_auipc(instr)
+            case Opcodes.MISC_MEM:
+                return self.execute_mem(instr)
+            case Opcodes.SYSTEM:
+                return self.execute_system(instr)
             case _:
                 raise RuntimeError(f"Unknown opcode: {instr.opcode}")
 
@@ -301,8 +316,11 @@ class RV32I:
 
     def execute_jalr(self, instr: DecodedInstr):
         if instr.funct3 == 0x0:
+            dest_addr = self.regs[instr.rs1] + instr.imm
+            dest_addr &= ~1  # RISC-V spec defines that LSB should be set to 0
+
             self.set_reg(instr.rd, self.pc + 4)
-            self.pc = self.regs[instr.rs1] + instr.imm
+            self.pc = dest_addr
         else:
             self.inc_pc()
 
@@ -316,19 +334,35 @@ class RV32I:
         self.set_reg(instr.rd, val)
         self.inc_pc()
 
-    def run_bin(self, hex_filepath: str, max_instructions: int = 100):
-        rom_bytes = open(hex_filepath, "rb").read()
-        self.memory.load_rom(rom_bytes)
-        self.pc = self.memory.rom.start_offset
+    def execute_mem(self, instr: DecodedInstr):
+        # All memory operations are ordered
+        # So can ignore FENCE instructions
+        self.inc_pc()
 
-        for i in range(max_instructions):
+    def execute_system(self, instr: DecodedInstr):
+        if instr.funct3 == 0x0:
+            if instr.imm == 0:  # ECALL
+                raise ECall
+            if instr.imm == 1:  # EBREAK
+                raise EBreak
+        self.inc_pc()
+
+    def run_program(self, max_instructions: int | None = None):
+        """Run program until ECALL/EBREAK instruction or after max_instructions"""
+        for i in itertools.count():
+            if max_instructions is not None:
+                if not i < max_instructions:
+                    break
+
             bin_instr = self.fetch()
             decoded_instr = self.decode(bin_instr)
 
-            print(f"addr: 0x{u.to_uint32(self.pc):x}\tbin instr: 0x{bin_instr:x}\t{decoded_instr = }")
-            self.execute(decoded_instr)
+            try:
+                self.execute(decoded_instr)
+            except (ECall, EBreak):
+                break
 
-
-if __name__ == "__main__":
-    rv = RV32I()
-    rv.run_bin("firmware/build/basic_c.bin")
+    def load_bin(self, bin_filepath: str):
+        """Load binary file into program memory and initialise PC"""
+        prog_bytes = open(bin_filepath, "rb").read()
+        self.pc = self.memory.load_program(prog_bytes)

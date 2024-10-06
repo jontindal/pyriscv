@@ -182,7 +182,7 @@ def test_branch(instr: str, rs1: R, rs2: R, should_branch: bool, val1: int, val2
     rv.set_reg(rs2, val2)
     instr_bin = asm(instr, rs1=rs1, rs2=rs2, imm=IMM)
     rv.execute(rv.decode(instr_bin))
-    expected_pc = IMM + INITIAL_PC if should_branch else INITIAL_PC
+    expected_pc = IMM + INITIAL_PC if should_branch else INITIAL_PC + 4
     assert rv.pc == expected_pc, f"Found 0x{rv.pc:x}, expected 0x{expected_pc:x}"
 
 
@@ -210,6 +210,8 @@ def test_jal(instr: str, rd: R, imm: int):
     "instr,rd,rs1,val1,imm",
     [
         ("jalr", R.X1, R.X2, 0x66666666, 0x0),
+        ("jalr", R.X1, R.X1, 0x66666666, 0x0),
+        ("jalr", R.X1, R.X2, 0x66666666, 0x3),
         ("jalr", R.X1, R.X2, 0x66666666, 0x6AA),
         ("jalr", R.X1, R.X2, 0x66666666, -0x20),
     ],
@@ -220,10 +222,14 @@ def test_jalr(instr: str, rd: R, rs1: R, val1: int, imm: int):
     rv.set_reg(rs1, val1)
     instr_bin = asm(instr, rd, rs1, imm=imm)
     rv.execute(rv.decode(instr_bin))
+
     assert (
         rv.regs[rd] == INITIAL_PC + 4
     ), f"Found 0x{rv.regs[rd]:x}, expected 0x{INITIAL_PC + 4:x}"
+
     expected_pc = u.to_int32(val1 + imm)
+    # Spec defines LSB should be set to 0, since instructions must be aligned on 16-bit boundaries
+    expected_pc &= ~1
     assert rv.pc == expected_pc, f"Found 0x{rv.pc:x}, expected 0x{expected_pc:x}"
 
 

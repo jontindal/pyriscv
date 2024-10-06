@@ -31,6 +31,5 @@ end_init_bss:
     # Call main function
     call main
 
-    # Loop in case main exits
-loop:
-    j loop
+    # Stop execution
+    ebreak
