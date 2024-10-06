@@ -11,6 +11,8 @@
   - Cut down ALU tests and add to instruction tests
   - Create tests FENCE, EBREAK and ECALL instructions
   - Add CI for pytests and riscof
+  - Test across python versions
+  - Add logging for CLI
 
 ## VHDL core
 
