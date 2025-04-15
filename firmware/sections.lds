@@ -1,11 +1,11 @@
 /* Generate a link error if heap and stack don't fit into RAM */
-__heap_size    	= 0x200;  /* required amount of heap */
+__heap_size    	= 0x2000;  /* required amount of heap */
 __stack_size	= 0x800;  /* required amount of stack */
 
 
 MEMORY {
-	RAM (xrw)		: ORIGIN = 0x90000000, LENGTH = 8K
-	FLASH (rx)		: ORIGIN = 0x80000000, LENGTH = 32K
+	RAM (xrw)		: ORIGIN = 0x90000000, LENGTH = 64K
+	FLASH (rx)		: ORIGIN = 0x80000000, LENGTH = 256K
 }
 
 

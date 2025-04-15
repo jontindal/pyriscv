@@ -123,8 +123,8 @@ class RVMemory:
 
     def __init__(self) -> None:
         self.mem_regions = [
-            ROMRegion(0x8000, 0x80000000),  # 32KB
-            RAMRegion(0x2000, 0x90000000),  # 8KB
+            ROMRegion(0x40000, 0x80000000),     # 256KB
+            RAMRegion(0x10000, 0x90000000),     # 64KB
             SerialPort(0xa0000000)
         ]
         self.program_mem = self.mem_regions[0]

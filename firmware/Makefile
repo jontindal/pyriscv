@@ -1,7 +1,8 @@
 ARCH = rv32i
 ABI = ilp32
+USE_STDLIB = 1
 
-TARGET = basic_asm
+TARGET = basic_c
 
 BUILD_DIR = build
 LINKER_FILE = sections.lds
@@ -16,9 +17,14 @@ OC  = $(PREFIX)objcopy
 OD  = $(PREFIX)objdump
 CPP = $(PREFIX)cpp
 
-CC_FLAGS = -march=$(ARCH) -mabi=$(ABI) -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -T $(LINKER_FILE)
+CC_FLAGS = -march=$(ARCH) -mabi=$(ABI) -static -mcmodel=medany -fvisibility=hidden -nostartfiles -T $(LINKER_FILE)
 OCFLAGS = --strip-all -O binary
 ODFLAGS = -D
+ifndef USE_STDLIB
+	CC_FLAGS += -nostdlib
+else
+	CC_FLAGS += -Wl,--gc-sections -Wl,--print-memory-usage
+endif
 
 all: $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET)-dump.txt $(BUILD_DIR)/$(TARGET).bin
 
@@ -34,7 +40,7 @@ $(BUILD_DIR)/%-dump.txt: $(BUILD_DIR)/%.elf
 $(BUILD_DIR)/%.elf: %.S start.S | $(BUILD_DIR)
 	$(CC) $(CC_FLAGS) -o $@ $^
 
-$(BUILD_DIR)/%.elf: %.c start.S | $(BUILD_DIR)
+$(BUILD_DIR)/%.elf: %.c syscalls.c start.S | $(BUILD_DIR)
 	$(CC) $(CC_FLAGS) -o $@ $^
 
 $(BUILD_DIR):
