@@ -29,7 +29,7 @@ sudo apt-get install autoconf automake autotools-dev curl python3 python3-pip li
 ```bash
 git clone https://github.com/riscv-collab/riscv-gnu-toolchain.git
 cd riscv-gnu-toolchain
-./configure --prefix=$RV_INSTALL_PATH --with-arch=rv32gc --with-abi=ilp32d # for 32-bit toolchain
+./configure --prefix=$RV_INSTALL_PATH --with-arch=rv32i --with-abi=ilp32 # for 32-bit toolchain
 make
 ```
 
