@@ -4,6 +4,7 @@ import typing as t
 import numpy as np
 
 from pyriscv.assem import asm
+from pyriscv.mem import DataSize
 from pyriscv.rv32i import Regs as R, RV32I
 import pyriscv.utils as u
 
@@ -106,8 +107,9 @@ def test_load(
     imm: int,
 ):
     rv = RV32I()
-    rv.memory.ram.bytes[ram_addr: ram_addr + 4] = initial_mem
-    val1 = val1 + rv.memory.ram.start_offset
+    for i, byte in enumerate(initial_mem):
+        rv.memory.data_mem.write(ram_addr + i, DataSize.BYTE, byte)
+    val1 = val1 + rv.memory.data_mem.start_offset
     rv.set_reg(rs1, val1)
     instr_bin = asm(instr, rd, rs1, imm=imm)
     rv.execute(rv.decode(instr_bin))
@@ -140,13 +142,14 @@ def test_store(
     expected_mem: list[int],
 ):
     rv = RV32I()
-    val1 = val1 + rv.memory.ram.start_offset
+    val1 = val1 + rv.memory.data_mem.start_offset
     rv.set_reg(rs1, val1)
     rv.set_reg(rs2, val2)
     instr_bin = asm(instr, rs1=rs1, rs2=rs2, imm=imm)
     rv.execute(rv.decode(instr_bin))
     expected = np.array(expected_mem, dtype=np.uint8)
-    np.testing.assert_array_equal(rv.memory.ram.bytes[ram_addr: ram_addr + 4], expected)
+    ram_read_value = [rv.memory.data_mem.read(ram_addr + i, DataSize.BYTE) for i in range(4)]
+    np.testing.assert_array_equal(ram_read_value, expected)
 
 
 @pytest.mark.parametrize(
