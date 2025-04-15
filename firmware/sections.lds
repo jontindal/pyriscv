@@ -4,7 +4,7 @@ __stack_size	= 0x800;  /* required amount of stack */
 
 
 MEMORY {
-	RAM (xrw)		: ORIGIN = 0x90000000, LENGTH = 4K
+	RAM (xrw)		: ORIGIN = 0x90000000, LENGTH = 8K
 	FLASH (rx)		: ORIGIN = 0x80000000, LENGTH = 32K
 }
 
