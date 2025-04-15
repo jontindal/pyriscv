@@ -33,7 +33,7 @@ def riscof() -> None:
     test_sig_start = utils.to_uint32(rv.regs[rv32i.Regs.X10])
     test_sig_end = utils.to_uint32(rv.regs[rv32i.Regs.X11])
 
-    test_sig_words = [rv.memory.ram.read(addr, mem.DataSize.WORD) for addr in range(test_sig_start, test_sig_end, 4)]
+    test_sig_words = [rv.memory.read(addr, mem.DataSize.WORD) for addr in range(test_sig_start, test_sig_end, 4)]
 
     file_lines = [f"{word:08x}\n" for word in test_sig_words]
     with open(test_signature_path, "w") as f:
