@@ -361,6 +361,8 @@ class RV32I:
                 self.execute(decoded_instr)
             except (ECall, EBreak):
                 break
+            except RuntimeError as e:
+                raise RuntimeError(f"Error from instruction at 0x{self.pc:x}") from e
 
     def load_bin(self, bin_filepath: str):
         """Load binary file into program memory and initialise PC"""
