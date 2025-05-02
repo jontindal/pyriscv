@@ -1,0 +1,44 @@
+name: main
+
+on:
+  push:
+    branches: [ main, test-me-* ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: registry.gitlab.com/incoresemi/docker-images/compliance:latest
+      options: --entrypoint /bin/bash
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+          version: "0.7.2"
+    - name: Install package
+      run: |
+        uv venv --python 3.10
+        uv sync --all-extras --dev
+    - name: Run pre-commit
+      run: |
+        uv run pre-commit run --all-files
+    - name: Run pytests
+      run: |
+        uv run pytest
+    - name: Run RISCOF
+      working-directory: ./riscof
+      run: |
+        sed -i '/docker=true/d' config.ini
+        uv run riscof --verbose info arch-test --clone
+        uv run riscof run --config=config.ini --suite=riscv-arch-test/riscv-test-suite/ --env=riscv-arch-test/riscv-test-suite/env --no-browser
+    # - name: Run firmware examples
+    #   working-directory: ./firmware
+    #   run: |
+    #     TARGET=basic_asm make
+    #     TARGET=basic_c make
+    #     ./build/target_asm
+    #     ./build/target_c
