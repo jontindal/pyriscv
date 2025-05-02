@@ -13,7 +13,7 @@
 - [PicoRV32](https://github.com/YosysHQ/picorv32) - starting point for IIA project
 - [riscv-mini](https://github.com/ucb-bar/riscv-mini)
 - [DarkRISCV](https://github.com/darklife/darkriscv)
-- [Chromite](https://chromite.readthedocs.io/en/latest/chromite.html) - good exmplanation of pipeline
+- [Chromite](https://chromite.readthedocs.io/en/latest/chromite.html) - good explanation of pipeline
 - [MR1](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html) - Core using formal verification with detail on memory buses
 - [kleine-riscv](https://github.com/rolandbernard/kleine-riscv)
 - [NEORV32](https://stnolting.github.io/neorv32/)
