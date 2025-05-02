@@ -8,7 +8,23 @@ Based on RISCOF [Quickstart](https://riscof.readthedocs.io/en/stable/installatio
 
 The 32-bit RISC-V [toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) should be built and installed.
 
-### Create install directory and add to PATH
+### Download
+
+```bash
+TOOLCHAIN_URL=https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-3/xpack-riscv-none-elf-gcc-14.2.0-3-linux-x64.tar.gz
+FILENAME=xpack-riscv-none-elf-gcc-14.2.0-3-linux-x64.tar.gz
+RV_INSTALL_PATH=/opt/riscv
+sudo mkdir -p $RV_INSTALL_PATH
+sudo chown $USER $RV_INSTALL_PATH
+wget -O "$FILENAME" "$TOOLCHAIN_URL"
+tar -xvzf "$FILENAME" -C $RV_INSTALL_PATH
+printf 'export PATH="%s/bin:$PATH"\n' $RV_INSTALL_PATH >> ~/.profile
+. ~/.profile
+```
+
+### Build from source
+
+#### Create install directory and add to PATH
 
 ```bash
 export RV_INSTALL_PATH=/opt/riscv
@@ -18,13 +34,13 @@ printf 'export PATH="%s/bin:$PATH"\n' $RV_INSTALL_PATH >> ~/.profile
 . ~/.profile
 ```
 
-### Install dependencies
+#### Install dependencies
 
 ```bash
 sudo apt-get install autoconf automake autotools-dev curl python3 python3-pip libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build git cmake libglib2.0-dev libslirp-dev
 ```
 
-### Build toolchain
+#### Build toolchain
 
 ```bash
 git clone https://github.com/riscv-collab/riscv-gnu-toolchain.git
