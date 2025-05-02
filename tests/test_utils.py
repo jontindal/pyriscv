@@ -22,9 +22,9 @@ import pyriscv.utils as u
 )
 def test_to_int32(val: u.IntTypes, expected: np.int32):
     result = u.to_int32(val)
-    assert (
-        result == expected
-    ), f"Got 0x{result:x}, expected 0x{expected:x} for input 0x{val:x}"
+    assert result == expected, (
+        f"Got 0x{result:x}, expected 0x{expected:x} for input 0x{val:x}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -44,9 +44,9 @@ def test_to_int32(val: u.IntTypes, expected: np.int32):
 )
 def test_to_uint32(val: u.IntTypes, expected: np.uint32):
     result = u.to_uint32(val)
-    assert (
-        result == expected
-    ), f"Got 0x{result:x}, expected 0x{expected:x} for input 0x{val:x}"
+    assert result == expected, (
+        f"Got 0x{result:x}, expected 0x{expected:x} for input 0x{val:x}"
+    )
 
 
 @pytest.mark.parametrize("val,width,expected", [(0x1, 3, "001"), (-0x1, 3, "111")])

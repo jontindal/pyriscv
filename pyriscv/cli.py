@@ -20,7 +20,9 @@ def riscof() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("bin_filepath", type=str, help="Path to program binary")
 
-    parser.add_argument("--test-signature", type=str, help="Path to output test signature")
+    parser.add_argument(
+        "--test-signature", type=str, help="Path to output test signature"
+    )
 
     args = parser.parse_args()
     bin_filepath, test_signature_path = args.bin_filepath, args.test_signature
@@ -33,7 +35,10 @@ def riscof() -> None:
     test_sig_start = utils.to_uint32(rv.regs[rv32i.Regs.X10])
     test_sig_end = utils.to_uint32(rv.regs[rv32i.Regs.X11])
 
-    test_sig_words = [rv.memory.read(addr, mem.DataSize.WORD) for addr in range(test_sig_start, test_sig_end, 4)]
+    test_sig_words = [
+        rv.memory.read(addr, mem.DataSize.WORD)
+        for addr in range(test_sig_start, test_sig_end, 4)
+    ]
 
     file_lines = [f"{word:08x}\n" for word in test_sig_words]
     with open(test_signature_path, "w") as f:

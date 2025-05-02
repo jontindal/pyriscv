@@ -43,10 +43,15 @@ ASM_INSTR_FORMATS = {
 }
 
 
-def asm(instr: str, rd: Regs | None = None, rs1: Regs | None = None,
-        rs2: Regs | None = None, imm: int | None = None) -> int:
+def asm(
+    instr: str,
+    rd: Regs | None = None,
+    rs1: Regs | None = None,
+    rs2: Regs | None = None,
+    imm: int | None = None,
+) -> int:
     """Converts assembly instruction to binary"""
-    typ, opcode_bits = ASM_INSTR_FORMATS[instr]
+    instr_type, opcode_bits = ASM_INSTR_FORMATS[instr]
     funct7, funct3, opcode = opcode_bits.split("_")
 
     if rd is not None:
@@ -56,7 +61,7 @@ def asm(instr: str, rd: Regs | None = None, rs1: Regs | None = None,
     if rs2 is not None:
         rs2 = int_to_bits(rs2, 5)
 
-    match typ:
+    match instr_type:
         case "R":
             bits = funct7 + rs2 + rs1 + funct3 + rd + opcode
         case "I":

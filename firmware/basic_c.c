@@ -5,7 +5,7 @@
 
 void main() {
     printf("Hello World\n");
-    
+
     // Allocate a small block
     char *buffer = (char *)malloc(32);
     if (!buffer) {

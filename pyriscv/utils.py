@@ -42,11 +42,15 @@ def bitfield_slice(bits: str, high: int, low: int) -> str:
     """Extract bitfields from a bit-array using Verilog bit-indexing order,
     so [0] is the right-most bit (which is opposite order than bitstring),
     and [1:0] are the 2 least significant bits, etc."""
-    return bits[len(bits) - 1 - high: len(bits) - low]
+    return bits[len(bits) - 1 - high : len(bits) - low]
 
 
 def split_bitfield(bits: str, sizes: t.Iterable[int]) -> t.Iterable[str]:
     """Split bit-array into bitfields of specified sizes, starting from right-most bit"""
-    assert sum(sizes) == len(bits), f"Expected sizes: {sizes} to sum to total length of bits: {len(bits)}"
+    assert sum(sizes) == len(bits), (
+        f"Expected sizes: {sizes} to sum to total length of bits: {len(bits)}"
+    )
     bit_iter = iter(bits)
-    return reversed([''.join(itertools.islice(bit_iter, size)) for size in reversed(tuple(sizes))])
+    return reversed(
+        ["".join(itertools.islice(bit_iter, size)) for size in reversed(tuple(sizes))]
+    )

@@ -27,9 +27,9 @@ INITIAL_PC = 0x1000
 )
 def test_asm_single(asm_qwargs: dict[str, t.Any], expected: int):
     instr_bits = asm(**asm_qwargs)
-    assert (
-        instr_bits == expected
-    ), f"Got 0x{instr_bits:x}, expected 0x{expected:x} for asm: {asm_qwargs}"
+    assert instr_bits == expected, (
+        f"Got 0x{instr_bits:x}, expected 0x{expected:x} for asm: {asm_qwargs}"
+    )
 
 
 @pytest.mark.parametrize(
@@ -148,7 +148,9 @@ def test_store(
     instr_bin = asm(instr, rs1=rs1, rs2=rs2, imm=imm)
     rv.execute(rv.decode(instr_bin))
     expected = np.array(expected_mem, dtype=np.uint8)
-    ram_read_value = [rv.memory.data_mem.read(ram_addr + i, DataSize.BYTE) for i in range(4)]
+    ram_read_value = [
+        rv.memory.data_mem.read(ram_addr + i, DataSize.BYTE) for i in range(4)
+    ]
     np.testing.assert_array_equal(ram_read_value, expected)
 
 
@@ -202,9 +204,9 @@ def test_jal(instr: str, rd: R, imm: int):
     rv.set_pc(INITIAL_PC)
     instr_bin = asm(instr, rd, imm=imm)
     rv.execute(rv.decode(instr_bin))
-    assert (
-        rv.regs[rd] == INITIAL_PC + 4
-    ), f"Found 0x{rv.regs[rd]:x}, expected 0x{INITIAL_PC + 4:x}"
+    assert rv.regs[rd] == INITIAL_PC + 4, (
+        f"Found 0x{rv.regs[rd]:x}, expected 0x{INITIAL_PC + 4:x}"
+    )
     expected_pc = u.to_int32(INITIAL_PC + imm)
     assert rv.pc == expected_pc, f"Found 0x{rv.pc:x}, expected 0x{expected_pc:x}"
 
@@ -226,9 +228,9 @@ def test_jalr(instr: str, rd: R, rs1: R, val1: int, imm: int):
     instr_bin = asm(instr, rd, rs1, imm=imm)
     rv.execute(rv.decode(instr_bin))
 
-    assert (
-        rv.regs[rd] == INITIAL_PC + 4
-    ), f"Found 0x{rv.regs[rd]:x}, expected 0x{INITIAL_PC + 4:x}"
+    assert rv.regs[rd] == INITIAL_PC + 4, (
+        f"Found 0x{rv.regs[rd]:x}, expected 0x{INITIAL_PC + 4:x}"
+    )
 
     expected_pc = u.to_int32(val1 + imm)
     # Spec defines LSB should be set to 0, since instructions must be aligned on 16-bit boundaries
