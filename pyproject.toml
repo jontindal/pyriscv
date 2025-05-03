@@ -10,7 +10,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "riscof~=1.25.3",
+    "riscof@git+https://github.com/riscv/riscof.git",
     "ruff",
     "mypy",
     "pre-commit",
