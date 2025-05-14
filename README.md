@@ -52,7 +52,7 @@ Use the following command to run the emulator:
 pyriscv <Path to program binary>
 ```
 
-There is a seperate entrypoint for RISCOF, `pyriscv-riscof`, which runs the emulator, writes the test signature to a file and has a modified memory map.
+There is a separate entrypoint for RISCOF, `pyriscv-riscof`, which runs the emulator, writes the test signature to a file and has a modified memory map.
 
 ### Running pytest unit tests
 

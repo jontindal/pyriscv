@@ -120,7 +120,13 @@ class RV32I:
         match opcode:
             case Opcodes.OP:
                 pass
-            case Opcodes.OP_IMM | Opcodes.LOAD | Opcodes.JALR | Opcodes.MISC_MEM | Opcodes.SYSTEM:  # I-type
+            case (
+                Opcodes.OP_IMM
+                | Opcodes.LOAD
+                | Opcodes.JALR
+                | Opcodes.MISC_MEM
+                | Opcodes.SYSTEM
+            ):  # I-type
                 imm = u.bits_to_int(u.bitfield_slice(bits, 31, 20))
             case Opcodes.STORE:  # S-Type
                 imm = u.bits_to_int(
@@ -176,7 +182,7 @@ class RV32I:
             case _:
                 raise RuntimeError(f"Unknown opcode: {instr.opcode}")
 
-    def execute_op(self, instr: DecodedInstr):
+    def execute_op(self, instr: DecodedInstr) -> None:
         if instr.funct3 == 0x0 and instr.funct7 == 0x00:  # ADD
             result = self.regs[instr.rs1] + self.regs[instr.rs2]
             self.set_reg(instr.rd, result)
@@ -216,7 +222,7 @@ class RV32I:
             self.set_reg(instr.rd, result)
         self.inc_pc()
 
-    def execute_imm(self, instr: DecodedInstr):
+    def execute_imm(self, instr: DecodedInstr) -> None:
         if instr.funct3 == 0x0:  # ADDI
             result = self.regs[instr.rs1] + u.to_int32(instr.imm)
             self.set_reg(instr.rd, result)
@@ -253,7 +259,7 @@ class RV32I:
             self.set_reg(instr.rd, result)
         self.inc_pc()
 
-    def execute_load(self, instr: DecodedInstr):
+    def execute_load(self, instr: DecodedInstr) -> None:
         addr = u.to_uint32(self.regs[instr.rs1] + instr.imm)
         match instr.funct3:
             case 0x0:  # LB
@@ -274,7 +280,7 @@ class RV32I:
         self.set_reg(instr.rd, val)
         self.inc_pc()
 
-    def execute_store(self, instr: DecodedInstr):
+    def execute_store(self, instr: DecodedInstr) -> None:
         addr = u.to_uint32(self.regs[instr.rs1] + instr.imm)
         value = u.to_uint32(self.regs[instr.rs2])
         match instr.funct3:
@@ -286,7 +292,7 @@ class RV32I:
                 self.memory.write(addr=addr, size=mem.DataSize.WORD, value=value)
         self.inc_pc()
 
-    def execute_branch(self, instr: DecodedInstr):
+    def execute_branch(self, instr: DecodedInstr) -> None:
         match instr.funct3:
             case 0x0:  # BEQ
                 branch = self.regs[instr.rs1] == self.regs[instr.rs2]
@@ -310,11 +316,11 @@ class RV32I:
         else:
             self.inc_pc()
 
-    def execute_jal(self, instr: DecodedInstr):
+    def execute_jal(self, instr: DecodedInstr) -> None:
         self.set_reg(instr.rd, self.pc + 4)
         self.pc += instr.imm
 
-    def execute_jalr(self, instr: DecodedInstr):
+    def execute_jalr(self, instr: DecodedInstr) -> None:
         if instr.funct3 == 0x0:
             dest_addr = self.regs[instr.rs1] + instr.imm
             dest_addr &= ~1  # RISC-V spec defines that LSB should be set to 0
@@ -324,17 +330,17 @@ class RV32I:
         else:
             self.inc_pc()
 
-    def execute_lui(self, instr: DecodedInstr):
+    def execute_lui(self, instr: DecodedInstr) -> None:
         val = instr.imm << 12
         self.set_reg(instr.rd, val)
         self.inc_pc()
 
-    def execute_auipc(self, instr: DecodedInstr):
+    def execute_auipc(self, instr: DecodedInstr) -> None:
         val = self.pc + (instr.imm << 12)
         self.set_reg(instr.rd, val)
         self.inc_pc()
 
-    def execute_mem(self, instr: DecodedInstr):
+    def execute_mem(self, instr: DecodedInstr) -> None:
         # All memory operations are ordered
         # So can ignore FENCE instructions
         self.inc_pc()
@@ -364,7 +370,7 @@ class RV32I:
             except RuntimeError as e:
                 raise RuntimeError(f"Error from instruction at 0x{self.pc:x}") from e
 
-    def load_bin(self, bin_filepath: str):
+    def load_bin(self, bin_filepath: str) -> None:
         """Load binary file into program memory and initialise PC"""
         prog_bytes = open(bin_filepath, "rb").read()
         self.pc = self.memory.load_program(prog_bytes)

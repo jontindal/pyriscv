@@ -39,7 +39,7 @@ class pyriscv(pluginTemplate):
         # Path to the directory where this python file is located. Collect it from the config.ini
         self.pluginpath = os.path.abspath(config["pluginpath"])
 
-        # Collect the paths to the  riscv-config absed ISA and platform yaml files. One can choose
+        # Collect the paths to the  riscv-config based ISA and platform yaml files. One can choose
         # to hardcode these here itself instead of picking it from the config.ini file.
         self.isa_spec = os.path.abspath(config["ispec"])
         self.platform_spec = os.path.abspath(config["pspec"])
@@ -53,7 +53,6 @@ class pyriscv(pluginTemplate):
             self.target_run = True
 
     def initialise(self, suite, work_dir, archtest_env):
-
         # capture the working directory. Any artifacts that the DUT creates should be placed in this
         # directory. Other artifacts from the framework and the Reference plugin will also be placed
         # here itself.
@@ -80,7 +79,6 @@ class pyriscv(pluginTemplate):
         )
 
     def build(self, isa_yaml, platform_yaml):
-
         # load the isa yaml as a dictionary in python.
         ispec = utils.load_yaml(isa_yaml)["hart0"]
 
@@ -121,10 +119,9 @@ class pyriscv(pluginTemplate):
         # function earlier
         make.makeCommand = "make -k -j" + self.num_jobs
 
-        # we will iterate over each entry in the testList. Each entry node will be refered to by the
+        # we will iterate over each entry in the testList. Each entry node will be referred to by the
         # variable testname.
         for testname in testList:
-
             # for each testname we get all its fields (as described by the testList format)
             testentry = testList[testname]
 
@@ -167,7 +164,9 @@ class pyriscv(pluginTemplate):
                 simcmd = 'echo "NO RUN"'
 
             # concatenate all commands that need to be executed within a make-target.
-            execute = f"@cd {testentry['work_dir']}; {compile_cmd}; {copy_command}; {simcmd};"
+            execute = (
+                f"@cd {testentry['work_dir']}; {compile_cmd}; {copy_command}; {simcmd};"
+            )
 
             # create a target. The makeutil will create a target with the name "TARGET<num>" where num
             # starts from 0 and increments automatically for each new target that is added

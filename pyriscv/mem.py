@@ -18,11 +18,9 @@ class MemRegion(Protocol):
     size: int
     start_offset: int
 
-    def read(self, addr: int, size: DataSize) -> np.uint32:
-        ...
+    def read(self, addr: int, size: DataSize) -> np.uint32: ...
 
-    def write(self, addr: int, size: DataSize, value: np.uint32):
-        ...
+    def write(self, addr: int, size: DataSize, value: np.uint32) -> None: ...
 
 
 class ROMRegion(MemRegion):
@@ -36,7 +34,7 @@ class ROMRegion(MemRegion):
     def size(self) -> int:
         return self._bytes.size
 
-    def load(self, contents: bytes):
+    def load(self, contents: bytes) -> None:
         for local_addr, byte in enumerate(contents):
             self._bytes[local_addr] = byte
 
@@ -62,7 +60,7 @@ class ROMRegion(MemRegion):
 
 
 class RAMRegion(ROMRegion):
-    def write(self, local_addr: int, size: DataSize, value: np.uint32):
+    def write(self, local_addr: int, size: DataSize, value: np.uint32) -> None:
         reg_bits = u.int_to_bits(value, 32)
         match size:
             case DataSize.BYTE:
@@ -93,10 +91,13 @@ class RAMRegion(ROMRegion):
 
 class SerialPort(MemRegion):
     """Single byte serial port"""
+
     read_file: TextIO
     write_file: TextIO
 
-    def __init__(self, addr: int, read_file: TextIO = sys.stdin, write_file: TextIO = sys.stdout):
+    def __init__(
+        self, addr: int, read_file: TextIO = sys.stdin, write_file: TextIO = sys.stdout
+    ) -> None:
         self.start_offset = addr
         self.read_file = read_file
         self.write_file = write_file
@@ -123,9 +124,9 @@ class RVMemory:
 
     def __init__(self) -> None:
         self.mem_regions = [
-            ROMRegion(0x40000, 0x80000000),     # 256KB
-            RAMRegion(0x10000, 0x90000000),     # 64KB
-            SerialPort(0xa0000000)
+            ROMRegion(0x40000, 0x80000000),  # 256KB
+            RAMRegion(0x10000, 0x90000000),  # 64KB
+            SerialPort(0xA0000000),
         ]
         self.program_mem = self.mem_regions[0]
         self.data_mem = self.mem_regions[1]

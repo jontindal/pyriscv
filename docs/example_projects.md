@@ -1,6 +1,6 @@
 # Reference RISC-V projects
 
-- [RISC-V Refernce Card](https://www.cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf)
+- [RISC-V Reference Card](https://www.cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf)
 
 ## Emulators
 
