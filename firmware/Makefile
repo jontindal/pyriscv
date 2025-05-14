@@ -2,7 +2,7 @@ ARCH = rv32i
 ABI = ilp32
 USE_STDLIB = 1
 
-TARGET = basic_c
+TARGET ?= basic_c
 
 BUILD_DIR = build
 LINKER_FILE = sections.lds
