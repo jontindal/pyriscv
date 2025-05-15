@@ -1,16 +1,22 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
+RUN apt-get update
+
+RUN apt-get install -y software-properties-common && \
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get update && \
     apt-get install -y \
-    git make cmake wget \
-    python3.10 python3-pip \
+    python3.10 python3-pip
+
+RUN apt-get install -y \
+    git make cmake wget
+
+RUN apt-get install -y \
     libgmp3-dev m4 \
-    device-tree-compiler libboost-regex-dev libboost-system-dev && \
-    apt-get clean && \
+    device-tree-compiler libboost-regex-dev libboost-system-dev
+    
+RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # RISCV-V toolchain download
@@ -49,6 +55,7 @@ RUN mkdir -p $SAIL_INSTALL_PATH && \
 # SAIL RISC-V
 RUN git clone --depth 1 https://github.com/riscv/sail-riscv.git && \
     cd sail-riscv && \
-    DOWNLOAD_GMP=TRUE ./build_simulators.sh && \
-    cp /sail-riscv/c_emulator/riscv_sim_* /usr/bin/ && \
+    DOWNLOAD_GMP=TRUE ./build_simulators.sh
+
+RUN cp /sail-riscv/build/c_emulator/riscv_sim_rv* /usr/bin/ && \
     rm -rf /sail-riscvz
