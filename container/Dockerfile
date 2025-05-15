@@ -20,11 +20,14 @@ RUN mkdir -p $RV_INSTALL_PATH && \
     rm "$RV_FILE"
 
 # SPIKE
-RUN git clone --depth 1 https://github.com/riscv/riscv-isa-sim.git && \
+ENV SPIKE_INSTALL_PATH=/opt/spike
+RUN mkdir -p $RV_INSTALL_PATH && \
+    chown root $RV_INSTALL_PATH && \
+    git clone --depth 1 https://github.com/riscv/riscv-isa-sim.git && \
     cd riscv-isa-sim && \
     mkdir build && \
     cd build && \
-    ../configure --prefix=$RV_INSTALL_PATH && \
+    ../configure --prefix=$SPIKE_INSTALL_PATH && \
     make -j $(nproc) 1>/dev/null && \
     make install && \
     cd ../../ && \
