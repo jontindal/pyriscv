@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y \
     git make cmake wget \
-    device-tree-compiler libboost-regex-dev libboost-system-dev && \
+    build-essential device-tree-compiler libboost-regex-dev libboost-system-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -21,8 +21,9 @@ RUN mkdir -p $RV_INSTALL_PATH && \
 
 # SPIKE
 ENV SPIKE_INSTALL_PATH=/opt/spike
-RUN mkdir -p $RV_INSTALL_PATH && \
-    chown root $RV_INSTALL_PATH && \
+ENV PATH=$PATH:$SPIKE_INSTALL_PATH/bin
+RUN mkdir -p $SPIKE_INSTALL_PATH && \
+    chown root $SPIKE_INSTALL_PATH && \
     git clone --depth 1 https://github.com/riscv/riscv-isa-sim.git && \
     cd riscv-isa-sim && \
     mkdir build && \
