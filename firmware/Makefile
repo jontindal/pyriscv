@@ -26,10 +26,7 @@ else
 	CC_FLAGS += -Wl,--gc-sections -Wl,--print-memory-usage
 endif
 
-all: $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET)-dump.txt $(BUILD_DIR)/$(TARGET).bin
-
-$(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.bin
-	hexdump -ve '1/4 "%08x\n"' $< > $@
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET)-dump.txt $(BUILD_DIR)/$(TARGET).bin
 
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf
 	$(OC) $(OCFLAGS) $< $@
