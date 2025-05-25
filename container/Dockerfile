@@ -4,7 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y \
     git make cmake wget \
-    build-essential device-tree-compiler libboost-regex-dev libboost-system-dev && \
+    build-essential device-tree-compiler libboost-regex-dev libboost-system-dev \
+    m4 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
