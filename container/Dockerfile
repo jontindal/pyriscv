@@ -17,7 +17,7 @@ ENV PATH=$PATH:$RV_INSTALL_PATH/bin
 RUN mkdir -p $RV_INSTALL_PATH && \
     chown root $RV_INSTALL_PATH && \
     wget -O "$RV_FILE" "$RV_TOOLCHAIN_URL" && \
-    tar -xvzf "$RV_FILE" -C $RV_INSTALL_PATH && \
+    tar --strip-components 1 -xvzf "$RV_FILE" -C $RV_INSTALL_PATH && \
     rm "$RV_FILE"
 
 # SPIKE
