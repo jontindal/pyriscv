@@ -42,5 +42,5 @@ jobs:
       run: |
         TARGET=basic_asm make
         TARGET=basic_c make
-        ./build/target_asm
-        ./build/target_c
+        uv run pyriscv build/basic_asm.bin
+        uv run pyriscv build/basic_c.bin
