@@ -53,3 +53,11 @@ RUN git clone --depth 1 https://github.com/riscv/sail-riscv.git && \
     cp ./build/c_emulator/riscv_sim_rv* /usr/bin/ && \
     cd ../ && \
     rm -rf sail-riscv
+
+# xpack toolchain uses riscv-none-elf prefix and is compatible with 32 and 64 bit
+# Add symlink to riscv{32,64}-unknown-elf prefix that is commonly assumed
+RUN cd $RV_INSTALL_PATH/bin && \
+    for file in riscv-none-elf-*; do \
+        ln -sf "$file" "riscv32-unknown-elf-${file#riscv-none-elf-}"; \
+        ln -sf "$file" "riscv64-unknown-elf-${file#riscv-none-elf-}"; \
+    done
