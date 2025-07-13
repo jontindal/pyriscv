@@ -35,9 +35,9 @@ class sail_cSim(pluginTemplate):
         self.pluginpath = os.path.abspath(config['pluginpath'])
         path = config['PATH'] if 'PATH' in config else ""
 
-
-        self.sail_exe = { '32' : os.path.join(path,"riscv_sim_RV32"),
-                '64' : os.path.join(path,"riscv_sim_RV64")}
+        sail_exe = os.path.join(path,"sail_riscv_sim")
+        self.sail_exe = {'32' : sail_exe + " --config {0}",
+                         '64' : sail_exe}
         self.isa_spec = os.path.abspath(config['ispec']) if 'ispec' in config else ''
         self.platform_spec = os.path.abspath(config['pspec']) if 'ispec' in config else ''
         self.make = config['make'] if 'make' in config else 'make'
@@ -58,11 +58,14 @@ class sail_cSim(pluginTemplate):
             compile_cmd += ' -T '+self.pluginpath+'/env/link.ld\
                 -I '+self.pluginpath+'/env/\
                 -I ' + archtest_env
+            rv32_config_path = os.path.join(self.pluginpath, "env/rv32d.json")
         else:
             compile_cmd += ' -T /work/sail_work/env/link.ld\
                 -I /work/sail_work/env/\
                 -I /work/test/includes'
+            rv32_config_path = "/work/sail_work/env/rv32d.json"
         self.compile_cmd = compile_cmd
+        self.sail_exe['32'] = self.sail_exe['32'].format(rv32_config_path)
 
     def build(self, isa_yaml, platform_yaml):
         ispec = utils.load_yaml(isa_yaml)['hart0']
@@ -141,11 +144,7 @@ class sail_cSim(pluginTemplate):
 
             execute += self.objdump_cmd.format(elf, self.xlen, 'ref.disass')
 
-            if 'c' not in  self.isa:
-                cmd = self.sail_exe[self.xlen]+' -C'
-            else:
-                cmd = self.sail_exe[self.xlen]
-            execute += cmd + ' --test-signature={0} {1} > {2}.log 2>&1;'.format(sig_file, elf, test_name)
+            execute += self.sail_exe[self.xlen] + ' --test-signature={0} {1} > {2}.log 2>&1;'.format(sig_file, elf, test_name)
 
             cov_str = ' '
             for label in testentry['coverage_labels']:
