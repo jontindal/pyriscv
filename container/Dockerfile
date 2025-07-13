@@ -21,12 +21,14 @@ RUN mkdir -p $RV_INSTALL_PATH && \
     rm "$RV_FILE"
 
 # SPIKE
+ENV SPIKE_COMMIT=2a0bb5f543974a039ab1ba50b0ac362c6646b74d
 ENV SPIKE_INSTALL_PATH=/opt/spike
 ENV PATH=$PATH:$SPIKE_INSTALL_PATH/bin
 RUN mkdir -p $SPIKE_INSTALL_PATH && \
     chown root $SPIKE_INSTALL_PATH && \
-    git clone --depth 1 https://github.com/riscv/riscv-isa-sim.git && \
+    git clone https://github.com/riscv/riscv-isa-sim.git && \
     cd riscv-isa-sim && \
+    git checkout $SPIKE_COMMIT && \
     mkdir build && \
     cd build && \
     ../configure --prefix=$SPIKE_INSTALL_PATH && \
@@ -36,8 +38,8 @@ RUN mkdir -p $SPIKE_INSTALL_PATH && \
     rm -rf riscv-isa-sim
 
 # SAIL
-ENV SAIL_URL=https://github.com/rems-project/sail/releases/download/0.19-linux-binary/sail.tar.gz
-ENV SAIL_FILE=sail-0.19-linux.tar.gz
+ENV SAIL_URL=https://github.com/rems-project/sail/releases/download/0.19.1-linux-binary/sail.tar.gz
+ENV SAIL_FILE=sail-0.19.1-linux.tar.gz
 ENV SAIL_INSTALL_PATH=/opt/sail
 ENV PATH=$PATH:$SAIL_INSTALL_PATH/bin
 RUN mkdir -p $SAIL_INSTALL_PATH && \
@@ -47,10 +49,12 @@ RUN mkdir -p $SAIL_INSTALL_PATH && \
     rm "$SAIL_FILE"
 
 # SAIL RISC-V
-RUN git clone --depth 1 https://github.com/riscv/sail-riscv.git && \
+ENV SAIL_RISCV_COMMIT=5487fa75ed9051135b8837f246e96b50fa23811a
+RUN git clone https://github.com/riscv/sail-riscv.git && \
     cd sail-riscv && \
+    git checkout $SAIL_RISCV_COMMIT && \
     ./build_simulators.sh && \
-    cp ./build/c_emulator/riscv_sim_rv* /usr/bin/ && \
+    cp ./build/c_emulator/sail_riscv_sim /usr/bin/ && \
     cd ../ && \
     rm -rf sail-riscv
 
