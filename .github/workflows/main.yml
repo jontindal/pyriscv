@@ -40,7 +40,6 @@ jobs:
     - name: Run firmware examples
       working-directory: ./firmware
       run: |
-        sed -i 's/PREFIX = riscv32-unknown-elf-/PREFIX = riscv-none-elf-/g' Makefile
         TARGET=basic_asm make
         TARGET=basic_c make
         uv run pyriscv build/basic_asm.bin
