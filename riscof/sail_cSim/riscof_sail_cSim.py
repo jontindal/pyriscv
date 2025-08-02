@@ -35,9 +35,8 @@ class sail_cSim(pluginTemplate):
         self.pluginpath = os.path.abspath(config['pluginpath'])
         path = config['PATH'] if 'PATH' in config else ""
 
-
-        self.sail_exe = { '32' : os.path.join(path,"riscv_sim_RV32"),
-                '64' : os.path.join(path,"riscv_sim_RV64")}
+        self.sail_exe = {'32' : os.path.join(path,"sail_riscv_sim"),
+                         '64' : os.path.join(path,"sail_riscv_sim")}
         self.isa_spec = os.path.abspath(config['ispec']) if 'ispec' in config else ''
         self.platform_spec = os.path.abspath(config['pspec']) if 'ispec' in config else ''
         self.make = config['make'] if 'make' in config else 'make'
@@ -141,11 +140,14 @@ class sail_cSim(pluginTemplate):
 
             execute += self.objdump_cmd.format(elf, self.xlen, 'ref.disass')
 
-            if 'c' not in  self.isa:
-                cmd = self.sail_exe[self.xlen]+' -C'
+            if self.docker:
+                sail_config_file = '/work/sail_work/env/rv{0}d.json'.format(self.xlen)
             else:
-                cmd = self.sail_exe[self.xlen]
-            execute += cmd + ' --test-signature={0} {1} > {2}.log 2>&1;'.format(sig_file, elf, test_name)
+                sail_config_file = self.pluginpath + '/env/rv{0}d.json'.format(self.xlen)
+
+            execute += self.sail_exe[self.xlen]
+            execute += ' --config {0}'.format(sail_config_file)
+            execute += ' --test-signature={0} {1} > {2}.log 2>&1;'.format(sig_file, elf, test_name)
 
             cov_str = ' '
             for label in testentry['coverage_labels']:

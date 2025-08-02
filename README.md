@@ -28,13 +28,22 @@ This has been tested on Ubuntu 20.04.
 
 The RISCOF framework compares the results of the DUT (`pyriscv`) against a reference model ([SAIL](https://github.com/riscv/sail-riscv)).
 
-The SAIL model can installed locally following these [instructions](https://riscof.readthedocs.io/en/stable/installation.html#install-plugin-models) or run from a Docker image. These instruction are for running from the Docker image. To use a local installation, you must change the `docker=true` line in **`riscof/config.ini`**.
+##### Local installation
+
+The SAIL model can installed locally following these [instructions](https://riscof.readthedocs.io/en/stable/installation.html#install-plugin-models).
+To use a local installation, you must set `docker=false` in **`riscof/config.ini`**.
+
+##### Using Docker
+
+The SAIL model can also be run from a Docker image.
 
 The following command can be used to pull the SAIL docker image.
 
 ```bash
-docker pull registry.gitlab.com/incoresemi/docker-images/compliance
+docker pull jontindal/riscv-arch-test
 ```
+
+Alternatively, the docker image from InCore Semiconductors can also be used for running RISCOF. The image is available at `registry.gitlab.com/incoresemi/docker-images/compliance`. However, the standard library installed with the RISC-V toolchain in this image is not compatible `pyriscv`, meaning it cannot be used for the testcases in `firmware/`.
 
 #### Install `pyriscv` with RISCOF dependency
 

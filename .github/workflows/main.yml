@@ -10,10 +10,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: registry.gitlab.com/incoresemi/docker-images/compliance:latest
+      image: jontindal/riscv-arch-test:latest
       options: --entrypoint /bin/bash
 
     steps:
+    - name: Mark Github workspace as safe
+      run: git config --system --add safe.directory "${GITHUB_WORKSPACE}"
     - uses: actions/checkout@v4
     - name: Install uv
       uses: astral-sh/setup-uv@v5
@@ -35,10 +37,10 @@ jobs:
         sed -i '/docker=true/d' config.ini
         uv run riscof --verbose info arch-test --clone
         uv run riscof run --config=config.ini --suite=riscv-arch-test/riscv-test-suite/ --env=riscv-arch-test/riscv-test-suite/env --no-browser
-    # - name: Run firmware examples
-    #   working-directory: ./firmware
-    #   run: |
-    #     TARGET=basic_asm make
-    #     TARGET=basic_c make
-    #     ./build/target_asm
-    #     ./build/target_c
+    - name: Run firmware examples
+      working-directory: ./firmware
+      run: |
+        TARGET=basic_asm make
+        TARGET=basic_c make
+        uv run pyriscv build/basic_asm.bin
+        uv run pyriscv build/basic_c.bin
