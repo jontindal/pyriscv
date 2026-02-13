@@ -1,6 +1,7 @@
 # Reference RISC-V projects
 
 - [RISC-V Reference Card](https://www.cs.sfu.ca/~ashriram/Courses/CS295/assets/notebooks/RISCV/RISCV_CARD.pdf)
+- [RISC-V ABIs Specification](https://riscv-non-isa.github.io/riscv-elf-psabi-doc/)
 
 ## Emulators
 
