@@ -354,7 +354,9 @@ class RV32I:
         self.inc_pc()
 
     def dump_regs(self) -> str:
-        return "\n".join(f"{reg.name}: 0x{np.uint32(self.regs[reg]):08x}" for reg in Regs)
+        return "\n".join(
+            f"{reg.name}: 0x{np.uint32(self.regs[reg]):08x}" for reg in Regs
+        )
 
     def run_program(self, max_instructions: int | None = None):
         """Run program until ECALL/EBREAK instruction or after max_instructions"""
@@ -370,7 +372,9 @@ class RV32I:
             except (ECall, EBreak):
                 break
             except Exception as e:  # Convert pc to unsigned for easier debugging
-                raise RuntimeError(f"Error from instruction at 0x{np.uint32(self.pc):x} with registers:\n{self.dump_regs()}") from e
+                raise RuntimeError(
+                    f"Error from instruction at 0x{np.uint32(self.pc):x} with registers:\n{self.dump_regs()}"
+                ) from e
         print(f"Program terminated after executing {i} instructions")
 
     def load_bin(self, bin_filepath: str) -> None:

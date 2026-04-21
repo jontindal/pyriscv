@@ -29,7 +29,7 @@ function(add_riscv_executable target_name)
 
     # Print memory usage
     target_link_options(${target_name} PRIVATE -Wl,--gc-sections -Wl,--print-memory-usage)
-    
+
     if(ARG_USE_STDLIB)
         target_compile_options(${target_name} PRIVATE --specs=nosys.specs)
         target_link_options(${target_name} PRIVATE --specs=nosys.specs)
@@ -41,9 +41,9 @@ function(add_riscv_executable target_name)
 
     add_custom_command(
         TARGET ${target_name} POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY} -O binary -S $<TARGET_FILE:${target_name}> 
+        COMMAND ${CMAKE_OBJCOPY} -O binary -S $<TARGET_FILE:${target_name}>
                 $<TARGET_FILE_DIR:${target_name}>/${target_name}.bin
-        COMMAND ${CMAKE_OBJDUMP} -D $<TARGET_FILE:${target_name}> > 
+        COMMAND ${CMAKE_OBJDUMP} -D $<TARGET_FILE:${target_name}> >
                 $<TARGET_FILE_DIR:${target_name}>/${target_name}-dump.txt
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating binary and disassembly for ${target_name}"
