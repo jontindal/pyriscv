@@ -318,7 +318,7 @@ class RV32I:
 
     def execute_jal(self, instr: DecodedInstr) -> None:
         self.set_reg(instr.rd, self.pc + 4)
-        self.pc += instr.imm
+        self.set_pc(self.pc + instr.imm)
 
     def execute_jalr(self, instr: DecodedInstr) -> None:
         if instr.funct3 == 0x0:
@@ -326,7 +326,7 @@ class RV32I:
             dest_addr &= ~1  # RISC-V spec defines that LSB should be set to 0
 
             self.set_reg(instr.rd, self.pc + 4)
-            self.pc = dest_addr
+            self.set_pc(dest_addr)
         else:
             self.inc_pc()
 
@@ -353,6 +353,11 @@ class RV32I:
                 raise EBreak
         self.inc_pc()
 
+    def dump_regs(self) -> str:
+        return "\n".join(
+            f"{reg.name}: 0x{np.uint32(self.regs[reg]):08x}" for reg in Regs
+        )
+
     def run_program(self, max_instructions: int | None = None):
         """Run program until ECALL/EBREAK instruction or after max_instructions"""
         for i in itertools.count():
@@ -360,15 +365,17 @@ class RV32I:
                 if not i < max_instructions:
                     break
 
-            bin_instr = self.fetch()
-            decoded_instr = self.decode(bin_instr)
-
             try:
+                bin_instr = self.fetch()
+                decoded_instr = self.decode(bin_instr)
                 self.execute(decoded_instr)
             except (ECall, EBreak):
                 break
-            except RuntimeError as e:
-                raise RuntimeError(f"Error from instruction at 0x{self.pc:x}") from e
+            except Exception as e:  # Convert pc to unsigned for easier debugging
+                raise RuntimeError(
+                    f"Error from instruction at 0x{np.uint32(self.pc):x} with registers:\n{self.dump_regs()}"
+                ) from e
+        print(f"Program terminated after executing {i} instructions")
 
     def load_bin(self, bin_filepath: str) -> None:
         """Load binary file into program memory and initialise PC"""

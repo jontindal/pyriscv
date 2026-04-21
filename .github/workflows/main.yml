@@ -40,7 +40,7 @@ jobs:
     - name: Run firmware examples
       working-directory: ./firmware
       run: |
-        TARGET=basic_asm make
-        TARGET=basic_c make
+        cmake -S . -B build
+        cmake --build build
         uv run pyriscv build/basic_asm.bin
         uv run pyriscv build/basic_c.bin

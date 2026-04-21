@@ -13,13 +13,15 @@ The 32-bit RISC-V [toolchain](https://github.com/riscv-collab/riscv-gnu-toolchai
 ```bash
 TOOLCHAIN_URL=https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-3/xpack-riscv-none-elf-gcc-14.2.0-3-linux-x64.tar.gz
 FILENAME=xpack-riscv-none-elf-gcc-14.2.0-3-linux-x64.tar.gz
+TOOLCHAIN_NAME=xpack-riscv-none-elf-gcc-14.2.0-3-linux-x64
 RV_INSTALL_PATH=/opt/riscv
 sudo mkdir -p $RV_INSTALL_PATH
 sudo chown $USER $RV_INSTALL_PATH
 wget -O "$FILENAME" "$TOOLCHAIN_URL"
 tar -xvzf "$FILENAME" -C $RV_INSTALL_PATH
-printf 'export PATH="%s/bin:$PATH"\n' $RV_INSTALL_PATH >> ~/.profile
+printf 'export PATH="%s/$s/bin:$PATH"\n' $RV_INSTALL_PATH $TOOLCHAIN_NAME >> ~/.profile
 . ~/.profile
+rm $FILENAME
 ```
 
 ### Build from source

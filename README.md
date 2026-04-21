@@ -81,4 +81,17 @@ A summary of the test results is written to **`riscof_work/report.html`**.
 
 ### Firmware
 
-The **`firmware/`** directory provides a Makefile, linker script and startup code to compile binary programs. The two example programs, **`firmware/basic_asm.S`** and **`firmware/basic_c.c`**, can be compiled by changing the `TARGET` variable in the Makefile.
+The **`firmware/`** directory provides CMake build configuration, linker script, and startup code to compile binary programs.
+
+**Building:**
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+**Available targets:**
+- `basic_asm` - Assembly-only program (no stdlib)
+- `basic_c` - C program with minimal stdlib support
+- `sort` - Bubble sort implementation in C and assembly
+
+Each target generates a `.bin` binary and `-dump.txt` disassembly in the `build/` directory.
