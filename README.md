@@ -85,7 +85,7 @@ The **`firmware/`** directory provides CMake build configuration, linker script,
 
 **Building:**
 ```bash
-cmake -B build -DCMAKE_TOOLCHAIN_FILE=toolchain-riscv-none-elf.cmake
+cmake -S . -B build
 cmake --build build
 ```
 
